@@ -6,11 +6,16 @@ import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { lostItems } from "./db/schema.js";
 
+// Load environment variables from .env
 dotenv.config();
 
+// Initialize Fastify
 const fastify = Fastify({ logger: true, connectionTimeout: 5000 });
-await fastify.register(cors);
 
+// Register CORS plugin
+await fastify.register(cors, { origin: "*" });
+
+// Create and initialize SQLite database
 const sqlite = new Database("lostfound.db");
 const db = drizzle(sqlite);
 
@@ -26,26 +31,42 @@ sqlite.exec(`
   )
 `);
 
-// GET all lost items
+// Define POST route to report a missing item
+fastify.post("/report", async (request, reply) => {
+  const { name, description, location, contact } = request.body;
+
+  // You can log to debug
+  console.log("Report received:", request.body);
+
+  // Insert to DB here
+  // await db.query(...);
+
+  reply.send({ message: "Report submitted successfully" });
+});
+
+// Define POST route to add an item to the lost items
+fastify.post("/items", async (request, reply) => {
+  const { name, description, location, contact, date_lost } = request.body;
+
+  // Insert to DB
+  db.insert(lostItems).values({ name, description, location, contact, date_lost }).run();
+
+  reply.send({ message: "Item added successfully" });
+});
+
+// Define GET route to fetch all lost items
 fastify.get("/items", async (req, reply) => {
   const items = db.select().from(lostItems).all();
   return { items };
 });
 
-// POST a new lost item
-fastify.post("/items", async (req, reply) => {
-  const { name, description, location, contact, date_lost } = req.body;
-  db.insert(lostItems).values({ name, description, location, contact, date_lost }).run();
-  return { message: "Item added successfully" };
-});
-
-// Optional root route
+// Optional root route to check if server is running
 fastify.get("/", async (req, reply) => {
   return { message: "Lost & Found API is running!" };
 });
 
 // Start server
-fastify.listen( {host: "192.168.100.158", port: 3000} , (err, address) => {
+fastify.listen({ host: "192.168.100.158", port: 3000 }, (err, address) => {
   if (err) {
     fastify.log.error(err);
     process.exit(1);
