@@ -65,11 +65,28 @@ fastify.get("/", async (req, reply) => {
   return { message: "Lost & Found API is running!" };
 });
 
+
+export const HOST = '0.0.0.0';
+export const PORT = 3000;
 // Start server
-fastify.listen({ host: "192.168.100.158", port: 3000 }, (err, address) => {
+fastify.listen({ host: HOST, port: PORT }, (err, address) => {
   if (err) {
     fastify.log.error(err);
     process.exit(1);
   }
-  console.log(`🚀 Server running at ${address}`);
+  console.log(`🚀 Server listening on http://${HOST}:${PORT}`);
 });
+
+// Config endpoint to expose server information
+fastify.get("/config", async (req, reply) => {
+  const serverAddress = getServerIP();
+  return { 
+    api_url: `http://${serverAddress}:${PORT}` 
+  };
+});
+
+export async function serverIP({host: HOST, port: PORT}){
+    return{
+      api_url: "http://${HOST}:${PORT}"
+    }
+}

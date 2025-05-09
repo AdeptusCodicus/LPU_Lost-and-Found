@@ -19,8 +19,8 @@ const HomeScreen: React.FC = () => {
 
   const fetchItems = async () => {
     try {
-      console.log("Attempting to fetch items from:", `http://192.168.100.158:3000/items`);
-      const response = await fetch(`http://192.168.100.158:3000/items`);
+      console.log("Attempting to fetch items from:", `${API_URL}/items`);
+      const response = await fetch(`${API_URL}/items`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
