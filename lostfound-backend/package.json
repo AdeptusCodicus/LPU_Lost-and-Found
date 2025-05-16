@@ -1,0 +1,28 @@
+{
+  "name": "lostfound-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@fastify/jwt": "^9.1.0",
+    "@libsql/client": "^0.15.5",
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.41.0",
+    "fastify": "^5.3.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.1"
+  }
+}
