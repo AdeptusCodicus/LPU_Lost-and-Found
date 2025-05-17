@@ -131,9 +131,15 @@ fastify.post("/auth/login", async (req, reply) => {
 fastify.post("/admin/items", { preHandler: verifyAdmin }, async (req, reply) => {
   const { name, description, location, contact, date_lost } = req.body;
   try {
-    const newItem = await db.insert(foundItems).values({ name, description, location, contact, date_lost }).returning().get();
+    const newItem = await db.insert(foundItems).values({ 
+      name, 
+      description, 
+      location, 
+      contact, 
+      date_found 
+    }).returning().get();
     if (newItem) {
-      broadcast({ type: "NEW_LOST_ITEM", payload: newItem });
+      broadcast({ type: "NEW_FOUND_ITEM", payload: newItem });
       reply.send({ message: "Item added by admin", item: newItem });
     } else {
       reply.status(500).send({ error: "Failed to add item or retrieve it after adding." });
