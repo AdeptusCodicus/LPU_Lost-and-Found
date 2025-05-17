@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { drizzle } from "drizzle-orm/libsql";
-import { users, foundItems, reportedItems } from "./db/schema.js";
+import { users, foundItems, lostItems, reportedItems } from "./db/schema.js";
 import { eq } from "drizzle-orm";
 import { createClient } from "@libsql/client";
 import fastifyWebsocket from "@fastify/websocket";
@@ -38,7 +38,7 @@ function broadcast(data){
         console.error("Error sending message to client:", error);
       }
     } else {
-      console.warn('Skipping send to client with readyState: ${clientSocket.readyState}');
+      console.warn(`Skipping send to client with readyState: ${clientSocket.readyState}`);
     }
 }
 }
@@ -53,12 +53,12 @@ fastify.get("/ws", {websocket: true}, (connection, req) => {
 
   connection.socket.on('close', () => {
     console.log('Client disconnected');
-    connections.delete(connection.socket);
+    connections.delete(connection);
   });
 
   connection.socket.on('error', (error) => {
     console.error('WebSocket error:', error);
-    connections.delete(connection.socket);
+    connections.delete(connection);
   });
 });
 
@@ -195,33 +195,54 @@ fastify.post("/admin/reports/:id/approve", { preHandler: verifyAdmin }, async (r
   }
 
   try {
-    const report = await db.select().from(reportedItems).where(eq(reportedItems.id, Number(req.params.id))).get();
+    const report = await db.select().from(reportedItems).where(eq(reportedItems.id, reportId)).get();
     if (!report) return reply.status(404).send({ error: "Report not found" });
-    const newLostItem = await db.insert(foundItems).values({
-      name: report.name,
-      description: report.description,
-      location: report.location,
-      contact: report.contact,
-      date_lost: report.date_reported
-    }).returning().get();
 
-    if (!newLostItem){
-      return reply.status(500).send({ error: "Failed to create lost item from report." });
+    let approvedItem;
+
+    if (report.type === "found") {
+      approvedItem = await db.insert(foundItems).values({
+        name: report.name,
+        description: report.description,
+        location: report.location,
+        contact: report.contact,
+        date_found: report.date_reported
+      }).returning().get();
+   } else if (report.type === "lost") {
+      approvedItem = await db.insert(lostItems).values({
+        name: report.name,
+        description: report.description,
+        location: report.location,
+        contact: report.contact,
+        owner: report.user_email,
+        date_lost: report.date_reported
+      }).returning().get();
+    } else {
+      fastify.log.warn(`Unknown report type: ${report.type} for report ID ${reportId}`);
+      return reply.status(400).send({ error: `Invalid report type: ${report.type}` });
+    }
+    if (!approvedItem){
+      return reply.status(500).send({ error: "Failed to create item from report." });
     }
 
-    await db.delete(reportedItems).where(eq(reportedItems.id, report.id)).run();
+    await db.delete(reportedItems).where(eq(reportedItems.id, reportId)).run();
 
-    broadcast({ type: "REPORT_APPROVED", payload: { reportId: reportId, approvedItem: newLostItem } });
-    broadcast({ type: "NEW_LOST_ITEM", payload: newLostItem });
-    reply.send({ message: "Report approved and added to lost items", item: newLostItem });
+    broadcast({ type: "REPORT_APPROVED", payload: { reportId: reportId, approvedItem: approvedItem } });
+    broadcast({ type: "NEW_ITEM_APPROVED", payload: approvedItem });
+    reply.send({ message: `Report approved and added to ${report.type === 'found' ? 'found items' : 'lost items'}`, item: approvedItem });
   } catch (error) {
-    fastify.log.error(error, 'Error approving report ID ${reportId}');
+    fastify.log.error(error, `Error approving report ID ${reportId}`);
     reply.status(500).send({ error: "Internal server error while approving report." });
   }
 });
 
+fastify.get("/found-items", { preHandler: verifyMultiple }, async (req, reply) => {
+  const items = await db.select().from(foundItems).all();
+  reply.send({ items });
+});
+
 fastify.get("/lost-items", { preHandler: verifyMultiple }, async (req, reply) => {
-  const items = await db.select().from(foundItems);
+  const items = await db.select().from(lostItems).all();
   reply.send({ items });
 });
 
