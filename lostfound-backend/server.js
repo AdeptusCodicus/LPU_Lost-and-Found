@@ -129,7 +129,7 @@ fastify.post("/auth/login", async (req, reply) => {
 
 // Admin adds lost item
 fastify.post("/admin/items", { preHandler: verifyAdmin }, async (req, reply) => {
-  const { name, description, location, contact, date_lost } = req.body;
+  const { name, description, location, contact, date_found } = req.body;
   try {
     const newItem = await db.insert(foundItems).values({ 
       name, 
