@@ -5,14 +5,14 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { drizzle } from "drizzle-orm/libsql";
-import { users, lostItems, reportedItems } from "./db/schema.js";
+import { users, foundItems, reportedItems } from "./db/schema.js";
 import { eq } from "drizzle-orm";
 import { createClient } from "@libsql/client";
+import fastifyWebsocket from "@fastify/websocket";
 
 dotenv.config();
 
 const fastify = Fastify({ logger: true });
-await fastify.register(cors, { origin: '*' });
 
 const turso = createClient({
   url: process.env.TURSO_DATABASE_URL,
@@ -20,6 +20,47 @@ const turso = createClient({
 });
 
 const db = drizzle(turso);
+
+const connections = new Set();
+
+await fastify.register(cors, { origin: '*' });
+await fastify.register(fastifyWebsocket);
+
+function broadcast(data){
+  const message = JSON.stringify(data);
+  console.log("Broadcasting message:", message);
+  for (const connection of connections) {
+    const clientSocket = connection.socket;
+    if (clientSocket.readyState === 1){
+      try {
+        clientSocket.send(message);
+      } catch (error) {
+        console.error("Error sending message to client:", error);
+      }
+    } else {
+      console.warn('Skipping send to client with readyState: ${clientSocket.readyState}');
+    }
+}
+}
+
+fastify.get("/ws", {websocket: true}, (connection, req) => {
+  console.log('Client connected');
+  connections.add(connection);
+
+  connection.socket.on('message', message => {
+    console.log("Received message from client:", message.toString());
+  });
+
+  connection.socket.on('close', () => {
+    console.log('Client disconnected');
+    connections.delete(connection.socket);
+  });
+
+  connection.socket.on('error', (error) => {
+    console.error('WebSocket error:', error);
+    connections.delete(connection.socket);
+  });
+});
 
 // Middleware to protect admin routes
 function verifyAdmin(req, reply, done) {
@@ -89,8 +130,18 @@ fastify.post("/auth/login", async (req, reply) => {
 // Admin adds lost item
 fastify.post("/admin/items", { preHandler: verifyAdmin }, async (req, reply) => {
   const { name, description, location, contact, date_lost } = req.body;
-  await db.insert(lostItems).values({ name, description, location, contact, date_lost });
-  reply.send({ message: "Item added by admin" });
+  try {
+    const newItem = await db.insert(foundItems).values({ name, description, location, contact, date_lost }).returning().get();
+    if (newItem) {
+      broadcast({ type: "NEW_LOST_ITEM", payload: newItem });
+      reply.send({ message: "Item added by admin", item: newItem });
+    } else {
+      reply.status(500).send({ error: "Failed to add item or retrieve it after adding." });
+    }
+  } catch (error) {
+    fastify.log.error(error, "Error adding lost item by admin");
+    reply.status(500).send({ error: "Internal server error while adding item." });
+  }
 });
 
 // User reports item (lost or found)
@@ -103,18 +154,29 @@ fastify.post("/user/report", { preHandler: verifyUser }, async (req, reply) => {
     return reply.status(404).send({ error: "User not found" });
   }
 
-  await db.insert(reportedItems).values({
-    name,
-    description,
-    location,
-    contact,
-    date_reported,
-    type,
-    status: "pending",
-    user_email: req.user.email,
-    reporterID: user.id
-  });
-  reply.send({ message: "Report submitted" });
+  try { 
+    const newReport =await db.insert(reportedItems).values({
+      name,
+      description,
+      location,
+      contact,
+      date_reported,
+      type,
+      status: "pending",
+      user_email: req.user.email,
+      reporterID: user.id
+    }).returning().get();
+
+    if (newReport) {
+      broadcast({ type: "NEW_REPORT", payload: newReport });
+      reply.send({ message: "Report submitted", report: newReport });
+    } else {
+      reply.status(500).send({ error: "Failed to add report or retrieve it." });
+    }
+  } catch (error) {
+    fastify.log.error(error, "Error submitting report by user");
+    reply.status(500).send({ error: "Internal server error while submitting report." });
+  }
 });
 
 // Admin gets all reports
@@ -125,21 +187,41 @@ fastify.get("/admin/reports", { preHandler: verifyAdmin }, async (req, reply) =>
 
 // Admin verifies report (adds to lost items)
 fastify.post("/admin/reports/:id/approve", { preHandler: verifyAdmin }, async (req, reply) => {
-  const report = db.select().from(reportedItems).where(eq(reportedItems.id, Number(req.params.id))).get();
-  if (!report) return reply.status(404).send({ error: "Report not found" });
-  db.insert(lostItems).values({
-    name: report.name,
-    description: report.description,
-    location: report.location,
-    contact: report.contact,
-    date_lost: report.date_reported
-  }).run();
-  db.delete(reportedItems).where(eq(reportedItems.id, report.id)).run();
-  reply.send({ message: "Report approved and added to lost items" });
+  const reportIdParam = req.params.id;
+  const reportId = Number(reportIdParam);
+
+  if (isNaN(reportId) || !isFinite(reportId)) {
+    return reply.status(400).send({ error: "Invalid report ID format. ID must be a finite number." });	
+  }
+
+  try {
+    const report = await db.select().from(reportedItems).where(eq(reportedItems.id, Number(req.params.id))).get();
+    if (!report) return reply.status(404).send({ error: "Report not found" });
+    const newLostItem = await db.insert(foundItems).values({
+      name: report.name,
+      description: report.description,
+      location: report.location,
+      contact: report.contact,
+      date_lost: report.date_reported
+    }).returning().get();
+
+    if (!newLostItem){
+      return reply.status(500).send({ error: "Failed to create lost item from report." });
+    }
+
+    await db.delete(reportedItems).where(eq(reportedItems.id, report.id)).run();
+
+    broadcast({ type: "REPORT_APPROVED", payload: { reportId: reportId, approvedItem: newLostItem } });
+    broadcast({ type: "NEW_LOST_ITEM", payload: newLostItem });
+    reply.send({ message: "Report approved and added to lost items", item: newLostItem });
+  } catch (error) {
+    fastify.log.error(error, 'Error approving report ID ${reportId}');
+    reply.status(500).send({ error: "Internal server error while approving report." });
+  }
 });
 
 fastify.get("/lost-items", { preHandler: verifyMultiple }, async (req, reply) => {
-  const items = await db.select().from(lostItems);
+  const items = await db.select().from(foundItems);
   reply.send({ items });
 });
 

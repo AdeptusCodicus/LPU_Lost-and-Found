@@ -1,8 +1,18 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
+export const foundItems = sqliteTable("found_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  description: text("description"),
+  location: text("location").notNull(),
+  contact: text("contact").notNull(),
+  date_found: text("date_found").notNull(),
+});
+
 export const lostItems = sqliteTable("lost_items", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
+  owner: text("owner").notNull(),
   description: text("description"),
   location: text("location").notNull(),
   contact: text("contact").notNull(),
