@@ -29,35 +29,35 @@ await fastify.register(fastifyWebsocket);
 function broadcast(data){
   const message = JSON.stringify(data);
   console.log("Broadcasting message:", message);
-  for (const connection of connections) {
-    const clientSocket = connection.socket;
-    if (clientSocket.readyState === 1){
+  for (const conn of connections) { 
+    if (conn.socket && conn.socket.readyState === 1){ // Check if conn.socket exists
       try {
-        clientSocket.send(message);
+        conn.socket.send(message);
       } catch (error) {
         console.error("Error sending message to client:", error);
       }
     } else {
-      console.warn(`Skipping send to client with readyState: ${clientSocket.readyState}`);
+      const readyState = conn.socket ? conn.socket.readyState : "undefined (conn.socket is null/undefined)";
+      console.warn(`Skipping send to client with readyState: ${readyState}`);
     }
-}
+  }
 }
 
 fastify.get("/ws", {websocket: true}, (connection, req) => {
   console.log('Client connected');
   connections.add(connection);
 
-  connection.socket.on('message', message => {
+  connection.on('message', message => {
     console.log("Received message from client:", message.toString());
   });
 
-  connection.socket.on('close', () => {
+  connection.on('close', () => {
     console.log('Client disconnected');
     connections.delete(connection);
   });
 
-  connection.socket.on('error', (error) => {
-    console.error('WebSocket error:', error);
+  connection.on('error', (error) => {
+    console.error('WebSocket connection error on SocketStream:', error); 
     connections.delete(connection);
   });
 });
