@@ -7,6 +7,7 @@ export const foundItems = sqliteTable("found_items", {
   location: text("location").notNull(),
   contact: text("contact").notNull(),
   date_found: text("date_found").notNull(),
+  status: text("status").$default('available').notNull(),
 });
 
 export const lostItems = sqliteTable("lost_items", {
@@ -17,6 +18,7 @@ export const lostItems = sqliteTable("lost_items", {
   location: text("location").notNull(),
   contact: text("contact").notNull(),
   date_lost: text("date_lost").notNull(),
+  status: text("status").$default('missing').notNull(),
 });
 
 export const reportedItems = sqliteTable("reported_items", {
@@ -36,4 +38,12 @@ export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  isVerified: integer("is_verified", { mode: "boolean" }).$default(false).notNull(),
+  verificationToken: text("verification_token"),
+  verificationExpires: integer("verification_expires", { mode: `timestamp_ms` }),
+  passwordResetToken: text("password_reset_token"),
+  passwordResetExpires: integer("password_reset_expires", { mode: `timestamp_ms` }),
+  pendingPasswordChangeToken: text("pending_password_change_token"),
+  pendingPasswordChangeExpires: integer("pending_password_change_expires", { mode: 'timestamp_ms' }),
+  pendingNewPasswordHash: text("pending_new_password_hash")
 });
