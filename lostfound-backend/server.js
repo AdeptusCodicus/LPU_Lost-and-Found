@@ -271,7 +271,7 @@ fastify.post("/auth/login", async (req, reply) => {
   }
 
   const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
-  reply.send({ token });
+  reply.send({ token, user });
 });
 
 fastify.post("/auth/change-password", { preHandler: verifyMultiple }, async (req, reply) => { //implement email verification
