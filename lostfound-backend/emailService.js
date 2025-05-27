@@ -5,7 +5,7 @@ dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const verifiedSendingDomain = "valdoria-software.works";
-const frontendBaseUrl = process.env.FRONTEND_URL || "http://0.0.0.0:3000/auth";
+const frontendBaseUrl = process.env.FRONTEND_URL || "https://lpu-lostfound-tyh24.ondigitalocean.app/auth";
 
 export async function sendVerificationEmail(toEMail, verificationToken) {
     const verificationLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}`;

@@ -22,7 +22,7 @@ const ForgotPasswordScreen = () => {
     setIsLoading(true);
     try {
       // Replace with your actual endpoint for requesting password reset
-      await apiClient.post('/auth/request-password-reset', { email });
+      await apiClient.post('/auth/forgot-password', { email });
       setSuccessMessage('If an account exists for this email, a password reset link has been sent.');
       setEmail(''); // Clear email field
     } catch (err: any) {
