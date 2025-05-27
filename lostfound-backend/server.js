@@ -13,6 +13,7 @@ import { sendVerificationEmail } from "./emailService.js";
 import { sendPasswordChangedNotification } from "./emailService.js";
 import { sendPasswordResetEmail } from "./emailService.js";
 import { sendPasswordChangeConfirmationEmail } from "./emailService.js";
+
 dotenv.config();
 
 const fastify = Fastify({ logger: true });
@@ -128,7 +129,6 @@ fastify.get("/ws", {websocket: true}, (connection, req) => {
   }
 });
 
-// Middleware to protect admin routes
 function verifyAdmin(req, reply, done) {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -145,7 +145,6 @@ function verifyAdmin(req, reply, done) {
   }
 }
 
-// Middleware to protect user routes
 function verifyUser(req, reply, done) {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -177,7 +176,7 @@ function verifyMultiple(req, reply, done) {
     reply.status(401).send({ error: "Unauthorized" });
   }
 }
-// Register
+
 fastify.post("/auth/register", async (req, reply) => {
   const { email, password } = req.body;
 
@@ -260,7 +259,6 @@ fastify.get("/auth/verify-email", async (req, reply) => {
   }
 });
 
-// Login
 fastify.post("/auth/login", async (req, reply) => {
   const { email, password } = req.body;
   const user = await db.select().from(users).where(eq(users.email, email)).get();
@@ -477,7 +475,6 @@ fastify.post("/auth/reset-password", async (req, reply) => {
   }
 });
 
-// Admin adds lost item
 fastify.post("/admin/items", { preHandler: verifyAdmin }, async (req, reply) => {
   const { name, description, location, contact, date_found } = req.body;
   try {
@@ -501,7 +498,6 @@ fastify.post("/admin/items", { preHandler: verifyAdmin }, async (req, reply) => 
   }
 });
 
-// User reports item (lost or found)
 fastify.post("/user/report", { preHandler: verifyUser }, async (req, reply) => {
   const { name, description, location, contact, date_reported, type} = req.body;
 
@@ -555,13 +551,11 @@ fastify.get("/user/my-reports", { preHandler: verifyUser }, async (req, reply) =
   }
 });
 
-// Admin gets all reports
 fastify.get("/admin/reports", { preHandler: verifyAdmin }, async (req, reply) => {
   const reports = await db.select().from(reportedItems).all();
   reply.send({ reports });
 });
 
-// Admin verifies report (adds to lost items)
 fastify.post("/admin/reports/:id/approve", { preHandler: verifyAdmin }, async (req, reply) => {
   const reportIdParam = req.params.id;
   const reportId = Number(reportIdParam);
