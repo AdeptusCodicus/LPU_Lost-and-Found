@@ -10,10 +10,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
 
 const RegisterScreen = () => {
-  const navigation = useNavigation<RegisterScreenNavigationProp>();
-  // const { register, isLoading: authIsLoading } = useAuth(); // If register func is in AuthContext
+  const navigation = useNavigation<RegisterScreenNavigationProp>();  // const { register, isLoading: authIsLoading } = useAuth(); // If register func is in AuthContext
   const [isLoading, setIsLoading] = useState(false); // Local loading state for registration
-
   const [username, setUsername] = useState(''); // Or whatever your backend requires
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,6 +20,10 @@ const RegisterScreen = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const customFocusedColor = '#800000'; // Maroon
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const toggleShowPassword = () => setShowPassword(!showPassword);
+  const toggleShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
 
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -57,12 +59,13 @@ const RegisterScreen = () => {
 
       // Handle successful registration
       // response.data might contain the new user or a success message
-      console.log('Registration successful:', response.data);
-      setSuccessMessage('Registration successful! Please login.');
+      console.log('Registration successful response:', response.data);
+      setSuccessMessage('Registration successful! Please check your email to verify your account.');
       // Optionally, navigate to login or auto-login
-      setTimeout(() => {
-         navigation.navigate('Login');
-      }, 2000); // Navigate after 2 seconds
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
 
     } catch (err: any) {
       const apiErrorMessage = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
@@ -80,7 +83,7 @@ const RegisterScreen = () => {
           <Text variant="headlineMedium" style={styles.title}>Create Account</Text>
 
           <TextInput
-            label="Username" // Or Full Name, etc.
+            label="Username"
             value={username}
             onChangeText={setUsername}
             style={styles.input}
@@ -104,25 +107,27 @@ const RegisterScreen = () => {
             label="Password"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
+            secureTextEntry={!showPassword} // Use state variable
             style={styles.input}
             mode="outlined"
             disabled={isLoading}
             activeOutlineColor={customFocusedColor}
+            right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={toggleShowPassword} />} // Add icon
           />
           <TextInput
             label="Confirm Password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            secureTextEntry
+            secureTextEntry={!showConfirmPassword} // Use state variable
             style={styles.input}
             mode="outlined"
             disabled={isLoading}
             activeOutlineColor={customFocusedColor}
+            right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={toggleShowConfirmPassword} />} // Add icon
           />
 
-          {error ? <HelperText type="error" visible={!!error} style={styles.errorText}>{error}</HelperText> : null}
-          {successMessage ? <HelperText type="info" visible={!!successMessage} style={styles.successText}>{successMessage}</HelperText> : null}
+          {error && <HelperText type="error" visible={!!error} style={styles.errorText}>{error}</HelperText>}
+          {successMessage && <HelperText type="info" visible={!!successMessage} style={styles.successText}>{successMessage}</HelperText>}
 
           {isLoading ? (
             <ActivityIndicator animating={true} color="#800000" style={styles.buttonActivity} />
@@ -132,6 +137,7 @@ const RegisterScreen = () => {
               onPress={handleRegister}
               style={styles.button}
               buttonColor={customFocusedColor}
+              disabled={!!successMessage}
             >
               Register
             </Button>

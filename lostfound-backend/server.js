@@ -272,7 +272,7 @@ fastify.post("/auth/login", async (req, reply) => {
   }
 
   const token = jwt.sign({ id: client.id, email: client.email }, process.env.JWT_SECRET);
-  const user = {id: client.id, email: client.email};
+  const user = {id: client.id, username:client.username, email: client.email};
   reply.send({ token, user });
 });
 

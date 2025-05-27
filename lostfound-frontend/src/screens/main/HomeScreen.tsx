@@ -9,7 +9,7 @@ const HomeScreen = () => {
   return (
     <View style={styles.container}>
       <Text variant="headlineMedium">Home Screen</Text>
-      {user && <Text variant="bodyLarge">Welcome, {user.email}!</Text>}
+      {user && <Text variant="bodyLarge">Welcome, {user.username}!</Text>}
       <Button
         mode="outlined"
         onPress={logout}
