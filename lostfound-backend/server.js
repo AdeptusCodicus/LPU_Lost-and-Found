@@ -261,16 +261,17 @@ fastify.get("/auth/verify-email", async (req, reply) => {
 
 fastify.post("/auth/login", async (req, reply) => {
   const { email, password } = req.body;
-  const user = await db.select().from(users).where(eq(users.email, email)).get();
-  if (!user || !(await bcrypt.compare(password, user.password))) {
+  const client = await db.select().from(users).where(eq(users.email, email)).get();
+  if (!client || !(await bcrypt.compare(password, client.password))) {
     return reply.status(401).send({ error: "Invalid credentials" });
   }
 
-  if (!user.isVerified) {
+  if (!client.isVerified) {
     return reply.status(403).send({ error: "Account not verified. Please check your email for the verification link.", });
   }
 
-  const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
+  const token = jwt.sign({ id: client.id, email: client.email }, process.env.JWT_SECRET);
+  const user = {id: client.id, email: client.email};
   reply.send({ token, user });
 });
 
