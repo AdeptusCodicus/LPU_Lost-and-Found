@@ -36,6 +36,7 @@ export const reportedItems = sqliteTable("reported_items", {
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  username: text("username").notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   isVerified: integer("is_verified", { mode: "boolean" }).$default(false).notNull(),

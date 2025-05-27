@@ -178,7 +178,7 @@ function verifyMultiple(req, reply, done) {
 }
 
 fastify.post("/auth/register", async (req, reply) => {
-  const { email, password } = req.body;
+  const { username, email, password } = req.body;
 
   const existingUser = await db.select().from(users).where(eq(users.email, email)).get();
   if (existingUser){
@@ -197,6 +197,7 @@ fastify.post("/auth/register", async (req, reply) => {
     const verificationExpires = new Date(Date.now() + 3600000);
 
     const newUser = await db.insert(users).values({ 
+      username,
       email, 
       password: hashed,
       isVerified: false,

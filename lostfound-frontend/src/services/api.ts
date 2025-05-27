@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const API_URL = 'https://lpu-laf.onrender.com';
+const API_URL = 'https://lpu-lostfound-tyh24.ondigitalocean.app/';
 
 const apiClient = axios.create({
     baseURL: API_URL,

@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import apiClient from '../services/api';
 
 interface User {
-    id: string;
+    id: string | number;
     email: string;
 }
 
@@ -64,12 +64,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const { user: loggedInUser, token } = response.data;
 
+      if (!token || typeof token !== 'string') {
+        throw new Error('Invalid or missing token received from server.');
+      }
+      if (!loggedInUser || typeof loggedInUser !== 'object') {
+        throw new Error('Invalid or missing user object received from server.');
+      }
+
       await SecureStore.setItemAsync('userToken', token);
       await SecureStore.setItemAsync('userSession', JSON.stringify(loggedInUser));
       setUser(loggedInUser);
 
     } catch (error: any) {
-      console.error("Login API failed", error.response?.data || error.message);
+      console.error("Login API failed", error.response?.data || error.message || error);
       await SecureStore.deleteItemAsync('userToken');
       await SecureStore.deleteItemAsync('userSession');
       setUser(null);
