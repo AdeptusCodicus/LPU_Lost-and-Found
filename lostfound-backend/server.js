@@ -14,7 +14,6 @@ import { sendPasswordChangedNotification } from "./emailService.js";
 import { sendPasswordResetEmail } from "./emailService.js";
 import { sendPasswordChangeConfirmationEmail } from "./emailService.js";
 
-// Helper function to generate OTP
 function generateOtp(length = 6) {
   let otp = '';
   for (let i = 0; i < length; i++) {
@@ -59,7 +58,7 @@ function broadcastToAdmins(data) {
   const message = JSON.stringify(data);
   console.log("Broadcasting message to ADMINS:", message);
   for (const conn of connections){
-    if (conn.userData && conn.userData.email && conn.userData.email.endsWith("@lpuadmin.edu.ph" || "@gmail.com")) { //remove gmail in prod
+    if (conn.userData && conn.userData.email && conn.userData.email.endsWith("@lpuadmin.edu.ph" || "matthewvaldoria14@gmail.com")) { //remove gmail in prod
       try {
         if (conn.readyState === 1){
           conn.send(message);
@@ -143,7 +142,7 @@ function verifyAdmin(req, reply, done) {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return reply.status(401).send({ error: "No token provided" });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded.email.endsWith("@lpuadmin.edu.ph" && "@gmail.com")) { //remove gmail in prod
+    if (!decoded.email.endsWith("@lpuadmin.edu.ph" && "matthewvaldoria14@gmail.com")) { //remove gmail in prod
       return reply.status(403).send({ error: "Admin access only" });
     }
     req.user = decoded;
@@ -159,8 +158,8 @@ function verifyUser(req, reply, done) {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return reply.status(401).send({ error: "No token provided" });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded.email.endsWith("@lpunetwork.edu.ph")) {
-      return reply.status(403).send({ error: "User access only" });
+    if (!decoded.email.endsWith("@lpunetwork.edu.ph" && !decoded.email.endsWith("@gmail.com"))) { //Remove gmail in prod
+      return reply.status(403).send({ error: "User access only" }); 
     }
     req.user = decoded;
     done();
@@ -556,7 +555,6 @@ fastify.post("/auth/resend-otp", async (req, reply) => {
     const user = await db.select().from(users).where(eq(users.email, email)).get();
 
     if (!user) {
-      // For password-related OTPs, use a generic message
       if (purpose === "passwordReset" || purpose === "passwordChangeConfirmation") {
         fastify.log.info(`OTP resend (${purpose}) requested for non-existent email: ${email}`);
         return reply.send({ message: "If your email is registered and meets the criteria, an OTP will be sent." });
@@ -610,17 +608,14 @@ fastify.post("/auth/resend-otp", async (req, reply) => {
       return reply.send({ message: "If your email is registered and meets the criteria, an OTP will be sent." });
 
     } else if (purpose === "passwordChangeConfirmation") {
-      // Check if a password change was actually initiated
       if (!user.pendingNewPasswordHash || !user.pendingPasswordChangeOtpExpiresAt) {
         fastify.log.info(`Password change confirmation OTP resend requested for ${email}, but no pending change found.`);
         return reply.status(400).send({ error: "No pending password change found to resend OTP for. Please initiate the password change again." });
       }
-      // It's okay if the old OTP expired, we're generating a new one.
       await db.update(users)
         .set({
           pendingPasswordChangeOtp: hashedOtp,
           pendingPasswordChangeOtpExpiresAt: otpExpires,
-          // pendingNewPasswordHash remains as it was
         })
         .where(eq(users.id, user.id))
         .run();
@@ -633,7 +628,6 @@ fastify.post("/auth/resend-otp", async (req, reply) => {
       return reply.send({ message: "Password change confirmation OTP resent. Please check your email." });
     }
     
-    // Fallback, should not be reached if purpose validation is correct
     return reply.status(500).send({ error: "An unexpected error occurred processing the OTP purpose."});
 
   } catch (error) {

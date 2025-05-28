@@ -8,7 +8,7 @@ import {
   HelperText,
   Dialog,
   Portal,
-  Provider as PaperProvider, // Assuming you might use PaperProvider here too
+  Provider as PaperProvider, 
   DefaultTheme,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -16,13 +16,12 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import apiClient from '../../services/api';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
 
-// Define your custom theme or import from a central theme file
 const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#800000', // Maroon
-    accent: '#800000',  // Maroon
+    primary: '#800000', 
+    accent: '#800000',  
   },
 };
 const customFocusedColor = theme.colors.primary;
@@ -100,7 +99,7 @@ const RegisterScreen = () => {
       setRegisteredEmail(email.trim().toLowerCase());
       setSuccessMessage('Registration successful! An OTP has been sent to your email for verification.');
       setOtpModalVisible(true);
-      setOtp(''); // Clear previous OTP
+      setOtp('');
       setOtpError('');
       setResendOtpMessage('');
 
@@ -170,7 +169,7 @@ const RegisterScreen = () => {
     try {
       await apiClient.post('/auth/resend-otp', { email: registeredEmail, purpose: 'verification' });
       setResendOtpMessage('A new OTP has been sent to your email.');
-      setOtp(''); // Clear current OTP input
+      setOtp('');
     } catch (err: any) {
       const apiErrorMessage = err.response?.data?.error || 'Failed to resend OTP. Please try again.';
       setOtpError(apiErrorMessage);

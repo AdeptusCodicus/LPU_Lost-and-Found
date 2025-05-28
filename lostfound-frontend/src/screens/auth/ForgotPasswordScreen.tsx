@@ -29,7 +29,6 @@ const handleRequestReset = async () => {
     await apiClient.post('/auth/forgot-password', { email });
     setSuccessMessage('OTP sent! Redirecting to password reset...');
     
-    // Navigate to PasswordResetOtpScreen with email
     setTimeout(() => {
       navigation.navigate('PasswordResetOtp', { email });
     }, 2000);
@@ -70,14 +69,14 @@ const handleRequestReset = async () => {
             onPress={handleRequestReset}
             style={styles.button}
             buttonColor={customFocusedColor}
-            disabled={!!successMessage} // Disable after success
+            disabled={!!successMessage}
           >
             Send Reset Link
           </Button>
         )}
         <Button
           mode="text"
-          onPress={() => navigation.goBack()} // Or navigation.navigate('Login')
+          onPress={() => navigation.goBack()}
           style={styles.backLink}
           textColor={customFocusedColor}
           disabled={isLoading}

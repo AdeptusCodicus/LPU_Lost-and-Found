@@ -7,7 +7,7 @@ import {
   ActivityIndicator, 
   HelperText, 
   Card,
-  Provider as PaperProvider, // Assuming you might use PaperProvider here too
+  Provider as PaperProvider,
   DefaultTheme,
 } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -15,13 +15,12 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import apiClient from '../../services/api';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
 
-// Define your custom theme or import from a central theme file
 const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#800000', // Maroon
-    accent: '#800000',  // Maroon
+    primary: '#800000',
+    accent: '#800000',  
   },
 };
 const customFocusedColor = theme.colors.primary;
@@ -38,12 +37,12 @@ const PasswordResetOtpScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState(''); // For main success (password reset)
+  const [successMessage, setSuccessMessage] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const [resendOtpLoading, setResendOtpLoading] = useState(false);
-  const [resendOtpMessage, setResendOtpMessage] = useState(''); // For OTP resend success
+  const [resendOtpMessage, setResendOtpMessage] = useState('');
 
   const email = route.params?.email || '';
 
@@ -104,17 +103,17 @@ const PasswordResetOtpScreen = () => {
       return;
     }
 
-    setError(''); // Clear main error
+    setError(''); 
     setResendOtpMessage('');
     setResendOtpLoading(true);
 
     try {
       await apiClient.post('/auth/resend-otp', { email, purpose: 'passwordReset' });
       setResendOtpMessage('A new OTP has been sent to your email.');
-      setOtp(''); // Clear current OTP input
+      setOtp('');
     } catch (err: any) {
       const apiErrorMessage = err.response?.data?.error || 'Failed to resend OTP. Please try again.';
-      setError(apiErrorMessage); // Show error in the main error field
+      setError(apiErrorMessage); 
     } finally {
       setResendOtpLoading(false);
     }

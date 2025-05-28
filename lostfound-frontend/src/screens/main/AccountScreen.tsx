@@ -15,7 +15,6 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../services/api';
 
-// If you have a global theme, you might not need to define it here
 const theme = {
   ...DefaultTheme,
   colors: {
@@ -28,13 +27,11 @@ const theme = {
 const AccountScreen = ({ navigation }: any) => {
   const { user, logout, updateUserContext } = useAuth();
 
-  // Change Username State
   const [newUsername, setNewUsername] = useState('');
   const [usernameLoading, setUsernameLoading] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [usernameSuccess, setUsernameSuccess] = useState<string | null>(null);
 
-  // Change Password State
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -42,12 +39,10 @@ const AccountScreen = ({ navigation }: any) => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
-  // Password Visibility State
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // OTP Modal State (for password change confirmation)
   const [otp, setOtp] = useState('');
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
@@ -56,26 +51,17 @@ const AccountScreen = ({ navigation }: any) => {
   const [resendOtpMessage, setResendOtpMessage] = useState('');
 
 
-  // Pull to refresh state
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (user && !refreshing) { // Prevents overriding cleared field during refresh
-      setNewUsername(user.username || '');
-    }
-  }, [user, refreshing]);
-
-  // Pull to refresh function
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     
-    setNewUsername(''); // Clear username field completely
+    setNewUsername('');
     setCurrentPassword('');
     setNewPassword('');
     setConfirmNewPassword('');
     setOtp('');
     
-    // Clear all error and success messages
     setUsernameError(null);
     setUsernameSuccess(null);
     setPasswordError(null);
@@ -83,18 +69,16 @@ const AccountScreen = ({ navigation }: any) => {
     setOtpError(null);
     setResendOtpMessage('');
     
-    // Reset password visibility states
     setShowCurrentPassword(false);
     setShowNewPassword(false);
     setShowConfirmPassword(false);
     
-    // Close OTP modal if open
     setOtpModalVisible(false);
     
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
-  }, []); // Removed user dependency to ensure fields are cleared as intended
+  }, []); 
 
   const handleUsernameChange = async () => {
     setUsernameError(null);
@@ -210,7 +194,7 @@ const AccountScreen = ({ navigation }: any) => {
     try {
       await apiClient.post('/auth/resend-otp', { email: user.email, purpose: 'passwordChangeConfirmation' });
       setResendOtpMessage('A new OTP has been sent to your email.');
-      setOtp(''); // Clear current OTP input
+      setOtp(''); 
     } catch (err: any) {
       const apiErrorMessage = err.response?.data?.error || 'Failed to resend OTP.';
       setOtpError(apiErrorMessage);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useAuth } from '../../contexts/AuthContext';
-import { Searchbar, Appbar } from 'react-native-paper'; // Appbar removed for simplicity, can be added back
+import { Searchbar } from 'react-native-paper';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 
 import FoundItemsScreen from './FoundItemsScreen';
@@ -9,29 +9,19 @@ import LostItemsScreen from './LostItemsScreen';
 
 const Tab = createMaterialTopTabNavigator();
 
-// Define ParamList for the HomeTabs if you plan to pass params via navigation
-// For now, searchQuery is passed as a direct prop, so this might not be strictly needed for that.
 export type HomeTabParamList = {
   FoundItems: undefined;
   LostItems: undefined;
 };
 
 const HomeScreen = () => {
-  const { user, logout } = useAuth(); // user and logout might be used for an Appbar or profile features
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
   const onChangeSearch = (query: string) => setSearchQuery(query);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/*
-      // Optional Appbar Header - You can add this back if needed
-      <Appbar.Header>
-        <Appbar.Content title={`Welcome, ${user?.username || 'User'}`} />
-        <Appbar.Action icon="logout" onPress={logout} />
-      </Appbar.Header>
-      */}
-
       <View style={styles.searchContainer}>
         <Searchbar
           placeholder="Search items..."
@@ -68,16 +58,14 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff', // Or your app's primary background color
+    backgroundColor: '#fff', 
   },
   searchContainer: {
     paddingHorizontal: 10,
     paddingVertical: 8,
-    backgroundColor: '#fff', // Or a color that fits your theme
+    backgroundColor: '#fff', 
   },
   searchbar: {
-    // You can add custom styles to the searchbar if needed
-    // e.g., borderRadius: 25,
   },
 });
 

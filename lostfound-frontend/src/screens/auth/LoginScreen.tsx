@@ -22,11 +22,9 @@ const LoginScreen = () => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       setFormError('');
-      // authError from context is no longer cleared here.
-      // It's cleared before a new login attempt in handleLogin.
     });
     return unsubscribe;
-  }, [navigation]); // Dependencies updated
+  }, [navigation]);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -61,7 +59,7 @@ const LoginScreen = () => {
              onChangeText={setEmail}
              style={styles.input}
              mode="outlined"
-             disabled={isSubmitting || authIsLoading} // Use authIsLoading from context
+             disabled={isSubmitting || authIsLoading}
              activeOutlineColor={customFocusedColor}
              keyboardType="email-address"
              autoCapitalize="none"
@@ -73,7 +71,7 @@ const LoginScreen = () => {
              secureTextEntry={!showPassword}
              style={styles.input}
              mode="outlined"
-             disabled={isSubmitting || authIsLoading} // Use authIsLoading from context
+             disabled={isSubmitting || authIsLoading}
              activeOutlineColor={customFocusedColor}
              right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={toggleShowPassword} />}
          />
@@ -90,15 +88,13 @@ const LoginScreen = () => {
           </Button>
         </View>
 
-        {/* Display error message: authError from context or local formError */}
         {displayError ? (
             <HelperText type="error" visible={!!displayError} style={styles.errorText}>
               {displayError}
             </HelperText>
         ) : null}
 
-        {/* Show ActivityIndicator if AuthContext is loading */}
-        {(authIsLoading) ? ( // Primarily rely on authIsLoading from context
+        {(authIsLoading) ? ( 
             <ActivityIndicator animating={true} color="#800000" style={styles.buttonActivity} />
         ) : (
             <Button
@@ -106,7 +102,7 @@ const LoginScreen = () => {
             onPress={handleLogin}
             style={styles.button}
             buttonColor="#800000"
-            disabled={isSubmitting} // Can also add authIsLoading here if needed
+            disabled={isSubmitting} 
             >
             Login
             </Button>
@@ -139,15 +135,14 @@ const styles = StyleSheet.create({
      fontSize: 14,
      color: '#800000',
   },
-  errorText: { // Make sure this style is visible
+  errorText: { 
      marginBottom: 10,
      textAlign: 'center',
      width: '100%',
-     // color: 'red', // HelperText type="error" should handle this
      fontSize: 14,
   },
   button: { width: '100%', paddingVertical: 8, marginTop: 5, borderRadius: 8 },
-  buttonActivity: { width: '100%', paddingVertical: 20, marginTop: 5 }, // Ensure this has enough height
+  buttonActivity: { width: '100%', paddingVertical: 20, marginTop: 5 },
   registerLink: { marginTop: 15 }
 });
 

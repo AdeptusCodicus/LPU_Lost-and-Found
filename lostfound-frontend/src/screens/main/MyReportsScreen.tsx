@@ -14,7 +14,7 @@ interface ReportItem {
   date_reported: string;
   type: 'found' | 'lost';
   status: 'pending' | 'approved' | 'rejected';
-  user_email?: string; // Assuming this might be the reporter's email if different from logged-in user
+  user_email?: string; 
   reporterID?: number;
 }
 
@@ -25,7 +25,6 @@ const MyReportsScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // State for Modal
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -77,13 +76,13 @@ const MyReportsScreen = () => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'approved':
-        return '#4CAF50'; // Green
+        return '#4CAF50';
       case 'pending':
-        return '#FFC107'; // Amber
+        return '#FFC107'; 
       case 'rejected':
-        return '#F44336'; // Red
+        return '#F44336'; 
       default:
-        return '#757575'; // Grey
+        return '#757575'; 
     }
   };
 
@@ -187,14 +186,6 @@ const MyReportsScreen = () => {
                   {selectedReport.status.charAt(0).toUpperCase() + selectedReport.status.slice(1)}
                 </Text>
               </View>
-              
-              {/* You can add user_email or other details if needed */}
-              {/* {selectedReport.user_email && (
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Reported by Email:</Text>
-                  <Text style={styles.modalValue}>{selectedReport.user_email}</Text>
-                </View>
-              )} */}
 
               <Button mode="contained" onPress={hideModal} style={styles.modalButton} buttonColor="#800000">
                 Close
@@ -266,13 +257,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'red',
   },
-  // Modal Styles
   modalContainer: {
     backgroundColor: 'white',
     padding: 20,
     margin: 20,
     borderRadius: 8,
-    maxHeight: '80%', // Or adjust as needed
+    maxHeight: '80%', 
   },
   modalTitle: {
     marginBottom: 15,
@@ -289,16 +279,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#800000',
     fontWeight: 'bold',
-    marginRight: 8, // Increased space
-    width: '40%', // Give label a fixed width for alignment
+    marginRight: 8, 
+    width: '40%', 
   },
   modalValue: {
     fontSize: 16,
     lineHeight: 24,
     color: '#000000',
-    flex: 1, // Value takes remaining space
+    flex: 1, 
   },
-  statusLabelModal: { // Specific style for "Status:" label in modal
+  statusLabelModal: { 
     fontSize: 16,
     lineHeight: 24,
     color: '#800000',
@@ -306,7 +296,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     width: '40%',
   },
-  statusValueModal: { // Specific style for status value in modal
+  statusValueModal: { 
     fontSize: 16,
     lineHeight: 24,
     fontWeight: 'bold',

@@ -15,7 +15,6 @@ import { DatePickerModal } from 'react-native-paper-dates';
 import apiClient from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
-// Define your custom theme
 const theme = {
   ...DefaultTheme,
   colors: {
@@ -41,32 +40,26 @@ const ReportItemScreen = ({ navigation }: any) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Pull to refresh state
   const [refreshing, setRefreshing] = useState(false);
 
   const { user } = useAuth();
 
-  // Pull to refresh function
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     
-    // Clear all form fields
     setName('');
     setDescription('');
     setLocation('');
     setContact('');
-    setDateReported(undefined); // Clear date
-    setItemType(''); // Clear item type
+    setDateReported(undefined); 
+    setItemType(''); 
     
-    // Clear all error messages and submit messages
     setErrors({});
     setSubmitMessage(null);
     
-    // Close any open modals/menus
     setOpenDatePicker(false);
     setTypeMenuVisible(false);
     
-    // Simulate a small delay for better UX
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
@@ -74,17 +67,15 @@ const ReportItemScreen = ({ navigation }: any) => {
 
   const parseDisplayDate = (dateString: string | undefined | null): string => {
     if (!dateString) return 'N/A';
-    // Handles "YYYY-MM-DD" strings
     const parts = dateString.split('-');
     if (parts.length === 3) {
       const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // JavaScript months are 0-indexed
+      const month = parseInt(parts[1], 10) - 1; 
       const day = parseInt(parts[2], 10);
       if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
         return new Date(year, month, day).toLocaleDateString();
       }
     }
-    // Fallback for other date string formats or if parsing fails
     return new Date(dateString).toLocaleDateString();
   };
 
@@ -139,7 +130,7 @@ const ReportItemScreen = ({ navigation }: any) => {
       let formattedDateReported = '';
       if (dateReported) {
         const year = dateReported.getFullYear();
-        const month = (dateReported.getMonth() + 1).toString().padStart(2, '0'); // getMonth is 0-indexed
+        const month = (dateReported.getMonth() + 1).toString().padStart(2, '0'); 
         const day = dateReported.getDate().toString().padStart(2, '0');
         formattedDateReported = `${year}-${month}-${day}`;
       }
@@ -149,7 +140,7 @@ const ReportItemScreen = ({ navigation }: any) => {
         description,
         location,
         contact,
-        date_reported: formattedDateReported, // Use the locally formatted date
+        date_reported: formattedDateReported, 
         type: itemType,
       };
 
@@ -183,10 +174,10 @@ const ReportItemScreen = ({ navigation }: any) => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[theme.colors.primary]} // Android
-            tintColor={theme.colors.primary} // iOS
-            title="Pull to refresh" // iOS only
-            titleColor={theme.colors.primary} // iOS only
+            colors={[theme.colors.primary]} 
+            tintColor={theme.colors.primary} 
+            title="Pull to refresh" 
+            titleColor={theme.colors.primary} 
           />
         }
       >
@@ -205,7 +196,7 @@ const ReportItemScreen = ({ navigation }: any) => {
           mode="outlined"
           style={styles.input}
           error={!!errors.name}
-          disabled={refreshing} // Disable during refresh
+          disabled={refreshing} 
           onBlur={() => { if(name.trim()) setErrors(prev => ({ ...prev, name: '' }))}}
         />
         {errors.name && <HelperText type="error" visible={!!errors.name}>{errors.name}</HelperText>}
@@ -219,7 +210,7 @@ const ReportItemScreen = ({ navigation }: any) => {
           multiline
           numberOfLines={3}
           error={!!errors.description}
-          disabled={refreshing} // Disable during refresh
+          disabled={refreshing} 
           onBlur={() => { if(description.trim()) setErrors(prev => ({ ...prev, description: '' }))}}
         />
         {errors.description && <HelperText type="error" visible={!!errors.description}>{errors.description}</HelperText>}
@@ -231,7 +222,7 @@ const ReportItemScreen = ({ navigation }: any) => {
           mode="outlined"
           style={styles.input}
           error={!!errors.location}
-          disabled={refreshing} // Disable during refresh
+          disabled={refreshing} 
           onBlur={() => { if(location.trim()) setErrors(prev => ({ ...prev, location: '' }))}}
         />
         {errors.location && <HelperText type="error" visible={!!errors.location}>{errors.location}</HelperText>}
@@ -244,7 +235,7 @@ const ReportItemScreen = ({ navigation }: any) => {
           style={styles.input}
           keyboardType="default" 
           error={!!errors.contact}
-          disabled={refreshing} // Disable during refresh
+          disabled={refreshing} 
           onBlur={() => { if(contact.trim()) setErrors(prev => ({ ...prev, contact: '' }))}}
         />
         {errors.contact && <HelperText type="error" visible={!!errors.contact}>{errors.contact}</HelperText>}
@@ -257,7 +248,7 @@ const ReportItemScreen = ({ navigation }: any) => {
           textColor={errors.dateReported ? styles.errorColor.color : theme.colors.primary}
           uppercase={false}
           contentStyle={styles.buttonContent}
-          disabled={refreshing} // Disable during refresh
+          disabled={refreshing} 
         >
           {dateReported ? dateReported.toLocaleDateString() : 'Select Date Reported'}
         </Button>
@@ -285,7 +276,7 @@ const ReportItemScreen = ({ navigation }: any) => {
                 textColor={errors.itemType ? styles.errorColor.color : theme.colors.primary}
                 uppercase={false}
                 contentStyle={styles.buttonContent}
-                disabled={refreshing} // Disable during refresh
+                disabled={refreshing}
               >
                 {itemType ? (itemType === 'found' ? 'Found Item' : 'Lost Item') : 'Select Item Type'}
               </Button>
@@ -304,7 +295,7 @@ const ReportItemScreen = ({ navigation }: any) => {
           mode="contained"
           onPress={handleSubmit}
           loading={isLoading}
-          disabled={isLoading || refreshing} // Disable during refresh
+          disabled={isLoading || refreshing} 
           style={styles.button}
           buttonColor={theme.colors.primary}
         >
