@@ -48,7 +48,21 @@ const ReportItemScreen = ({ navigation }: any) => {
   const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const { user } = useAuth();
-
+  const parseDisplayDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return 'N/A';
+  // Handles "YYYY-MM-DD" strings
+  const parts = dateString.split('-');
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // JavaScript months are 0-indexed
+    const day = parseInt(parts[2], 10);
+    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+      return new Date(year, month, day).toLocaleDateString();
+    }
+  }
+  // Fallback for other date string formats or if parsing fails
+  return new Date(dateString).toLocaleDateString();
+  };
   const onDismissDatePicker = useCallback(() => {
     setOpenDatePicker(false);
   }, [setOpenDatePicker]);
@@ -97,12 +111,20 @@ const ReportItemScreen = ({ navigation }: any) => {
 
     setIsLoading(true);
     try {
+      let formattedDateReported = '';
+      if (dateReported) {
+        const year = dateReported.getFullYear();
+        const month = (dateReported.getMonth() + 1).toString().padStart(2, '0'); // getMonth is 0-indexed
+        const day = dateReported.getDate().toString().padStart(2, '0');
+        formattedDateReported = `${year}-${month}-${day}`;
+      }
+
       const payload = {
         name,
         description,
         location,
         contact,
-        date_reported: dateReported?.toISOString().split('T')[0],
+        date_reported: formattedDateReported, // Use the locally formatted date
         type: itemType,
       };
 
