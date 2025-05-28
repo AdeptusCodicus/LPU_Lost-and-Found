@@ -1,13 +1,14 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/main/HomeScreen';
-
+import ReportItemScreen from '../screens/main/ReportItemScreen';
+import MyReportsScreen from '../screens/main/MyReportsScreen';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type AppTabParamList = {
     Home: undefined;
     Report: undefined;
-    MyItems: undefined;
+    MyReports: undefined;
     Account: undefined;
 };
 
@@ -24,7 +25,7 @@ const AppNavigator = () => {
                         iconName = focused ? 'home' : 'home-outline';
                     } else if (route.name === 'Report') {
                         iconName = focused ? 'plus-circle' : 'plus-circle-outline';
-                    } else if (route.name === 'MyItems') {
+                    } else if (route.name === 'MyReports') {
                         iconName = focused ? 'format-list-bulleted' : 'format-list-bulleted-type';
                     } else if (route.name === 'Account') {
                         iconName = focused ? 'account-circle' : 'account-circle-outline';
@@ -40,8 +41,8 @@ const AppNavigator = () => {
                 headerTintColor: 'white',
             })}>
                 <Tab.Screen name ="Home" component={HomeScreen} />
-                <Tab.Screen name ="Report" component={HomeScreen} />
-                <Tab.Screen name ="MyItems" component={HomeScreen} />
+                <Tab.Screen name ="Report" component={ReportItemScreen} />
+                <Tab.Screen name ="MyReports" component={MyReportsScreen} />
                 <Tab.Screen name ="Account" component={HomeScreen} />
             </Tab.Navigator>
     );

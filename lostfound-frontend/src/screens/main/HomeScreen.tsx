@@ -1,39 +1,84 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text, Button } from 'react-native-paper';
-import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
+import React, { useState } from 'react';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { useAuth } from '../../contexts/AuthContext';
+import { Searchbar, Appbar } from 'react-native-paper'; // Appbar removed for simplicity, can be added back
+import { SafeAreaView, StyleSheet, View } from 'react-native';
+
+import FoundItemsScreen from './FoundItemsScreen';
+import LostItemsScreen from './LostItemsScreen';
+
+const Tab = createMaterialTopTabNavigator();
+
+// Define ParamList for the HomeTabs if you plan to pass params via navigation
+// For now, searchQuery is passed as a direct prop, so this might not be strictly needed for that.
+export type HomeTabParamList = {
+  FoundItems: undefined;
+  LostItems: undefined;
+};
 
 const HomeScreen = () => {
-  const { logout, user } = useAuth(); // Get logout function and user
+  const { user, logout } = useAuth(); // user and logout might be used for an Appbar or profile features
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const onChangeSearch = (query: string) => setSearchQuery(query);
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium">Home Screen</Text>
-      {user && <Text variant="bodyLarge">Welcome, {user.username}!</Text>}
-      <Button
-        mode="outlined"
-        onPress={logout}
-        style={styles.button}
-        textColor="#800000" // Example primary color
+    <SafeAreaView style={styles.safeArea}>
+      {/*
+      // Optional Appbar Header - You can add this back if needed
+      <Appbar.Header>
+        <Appbar.Content title={`Welcome, ${user?.username || 'User'}`} />
+        <Appbar.Action icon="logout" onPress={logout} />
+      </Appbar.Header>
+      */}
+
+      <View style={styles.searchContainer}>
+        <Searchbar
+          placeholder="Search items..."
+          onChangeText={onChangeSearch}
+          value={searchQuery}
+          style={styles.searchbar}
+          elevation={1}
+        />
+      </View>
+
+      <Tab.Navigator
+        screenOptions={{
+          tabBarActiveTintColor: '#800000',
+          tabBarInactiveTintColor: 'gray',
+          tabBarIndicatorStyle: {
+            backgroundColor: '#800000',
+          },
+          tabBarLabelStyle: {
+            fontWeight: 'bold',
+          },
+        }}
       >
-        Logout
-      </Button>
-    </View>
+        <Tab.Screen name="FoundItems" options={{ title: 'Found Items' }}>
+          {(props) => <FoundItemsScreen {...props} searchQuery={searchQuery} />}
+        </Tab.Screen>
+        <Tab.Screen name="LostItems" options={{ title: 'Lost Items' }}>
+          {(props) => <LostItemsScreen {...props} searchQuery={searchQuery} />}
+        </Tab.Screen>
+      </Tab.Navigator>
+    </SafeAreaView>
   );
 };
 
-
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    button: {
-        marginTop: 20,
-        borderColor: '#800000'
-    }
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff', // Or your app's primary background color
+  },
+  searchContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: '#fff', // Or a color that fits your theme
+  },
+  searchbar: {
+    // You can add custom styles to the searchbar if needed
+    // e.g., borderRadius: 25,
+  },
 });
 
 export default HomeScreen;

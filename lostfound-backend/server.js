@@ -571,6 +571,9 @@ fastify.post("/admin/reports/:id/approve", { preHandler: verifyAdmin }, async (r
     if (!report) return reply.status(404).send({ error: "Report not found" });
 
     let approvedItem;
+    if (report.status === 'approved' || report.status === 'rejected') {
+      return reply.status(400).send({ error: `Report already ${report.status}. Cannot process again.` });
+    }
 
     if (report.type === "found") {
       approvedItem = await db.insert(foundItems).values({
@@ -599,14 +602,13 @@ fastify.post("/admin/reports/:id/approve", { preHandler: verifyAdmin }, async (r
       return reply.status(500).send({ error: "Failed to create item from report." });
     }
 
-    await db.delete(reportedItems).where(eq(reportedItems.id, reportId)).run();
-
-    if (report.user_email){
-      broadcastToUserByEmail(report.user_email, { type: "REPORT_APPROVED", payload: { reportId: reportId, approvedItem: approvedItem } }); 
+    const updatedReport = await db.update(reportedItems).set({status: "approved" }).where(eq(reportedItems.id, reportId)).returning().get();
+    if (!updatedReport) {
+      fastify.log.error(`Failed to update status to 'approved' for report ID ${reportId}. The item was created but report status update failed.`);
     }
-    broadcast({ type: "NEW_ITEM_APPROVED", payload: approvedItem });
 
     if (report.user_email) {
+      broadcastToUserByEmail(report.user_email, { type: "REPORT_APPROVED", payload: { reportId: report.id, approvedItem: approvedItem } }); 
       broadcastToUserByEmail(report.user_email, {
         type: "YOUR_REPORT_STATUS_UPDATE",
         payload: {
@@ -619,11 +621,63 @@ fastify.post("/admin/reports/:id/approve", { preHandler: verifyAdmin }, async (r
     } else {
       fastify.log.warn(`Report ID ${reportId} was approved, but no user_email found on the report to send targeted notification.`);
     }
-
-    reply.send({ message: `Report approved and added to ${report.type === 'found' ? 'found items' : 'lost items'}`, item: approvedItem });
+    broadcast({ type: "NEW_ITEM_APPROVED", payload: approvedItem }); 
+    reply.send({ message: `Report approved and added to ${report.type === 'found' ? 'found items' : 'lost items'}. Report status updated.`, item: approvedItem, updated_report_status: updatedReport ? updatedReport.status : 'update_failed' });
   } catch (error) {
     fastify.log.error(error, `Error approving report ID ${reportId}`);
     reply.status(500).send({ error: "Internal server error while approving report." });
+  }
+});
+
+fastify.post("/admin/reports/:id/reject", { preHandler: verifyAdmin }, async (req, reply) => {
+  const reportIdParam = req.params.id;
+  const reportId = Number(reportIdParam);
+
+  if (isNaN(reportId) || !isFinite(reportId)) {
+    return reply.status(400).send({ error: "Invalid report ID format. ID must be a finite number." });
+  }
+
+  try {
+    const report = await db.select().from(reportedItems).where(eq(reportedItems.id, reportId)).get();
+    if (!report) {
+      return reply.status(404).send({ error: "Report not found" });
+    }
+
+    if (report.status === 'rejected' || report.status === 'approved') {
+      return reply.status(400).send({ error: `Report already ${report.status}. Cannot process again.` });
+    }
+
+    const updatedReport = await db.update(reportedItems)
+      .set({ status: "rejected" })
+      .where(eq(reportedItems.id, reportId))
+      .returning()
+      .get();
+
+    if (!updatedReport) {
+      fastify.log.error(`Failed to update report ID ${reportId} to rejected status.`);
+      return reply.status(500).send({ error: "Failed to update report status." });
+    }
+
+    if (report.user_email) { // Use original report for user_email and name
+      broadcastToUserByEmail(report.user_email, {
+        type: "YOUR_REPORT_STATUS_UPDATE",
+        payload: {
+          reportName: report.name,
+          reportId: report.id,
+          status: "rejected",
+          // reason: "Optional reason can be added here if implemented" 
+        }
+      });
+    } else {
+      fastify.log.warn(`Report ID ${reportId} was rejected, but no user_email found on the report to send targeted notification.`);
+    }
+
+    broadcastToAdmins({ type: "REPORT_REJECTED", payload: updatedReport });
+
+    reply.send({ message: "Report rejected successfully.", report: updatedReport });
+  } catch (error) {
+    fastify.log.error(error, `Error rejecting report ID ${reportId}`);
+    reply.status(500).send({ error: "Internal server error while rejecting report." });
   }
 });
 
