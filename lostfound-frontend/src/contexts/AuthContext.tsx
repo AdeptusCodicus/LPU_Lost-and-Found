@@ -19,6 +19,7 @@ interface AuthContextType {
     authError: string | null;
     login: (email: string, pass: string) => Promise<void>;
     logout: () => Promise<void>;
+    updateUserContext: (updatedUser: User) => void;
     clearAuthError: () => void;
 }
 
@@ -146,8 +147,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateUserContext = (updatedUser: User) => {
+    setUser(updatedUser);
+    SecureStore.setItemAsync('userSession', JSON.stringify(updatedUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, authError, login, logout, clearAuthError }}>
+    <AuthContext.Provider value={{ user, isLoading, authError, login, logout, updateUserContext, clearAuthError }}>
       {children}
     </AuthContext.Provider>
   );

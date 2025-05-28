@@ -2,40 +2,45 @@ import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { Text, Button, TextInput, ActivityIndicator, HelperText } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import apiClient from '../../services/api';
+import { AuthStackParamList } from '../../navigation/AuthNavigator';
+
+type ForgotPasswordScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
 
 const ForgotPasswordScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<ForgotPasswordScreenNavigationProp>();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const customFocusedColor = '#800000';
 
-  const handleRequestReset = async () => {
-    if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    setError('');
-    setSuccessMessage('');
-    setIsLoading(true);
-    try {
-      // Replace with your actual endpoint for requesting password reset
-      await apiClient.post('/auth/forgot-password', { email });
-      setSuccessMessage('If an account exists for this email, a password reset link has been sent.');
-      setEmail(''); // Clear email field
-    } catch (err: any) {
-      // Avoid revealing if an email exists or not for security reasons
-      // So, show a generic success message even on error, or a very generic error.
-      // For now, let's assume the backend handles this gracefully.
-      console.error("Request password reset error:", err.response?.data || err.message);
-      setSuccessMessage('If an account exists for this email, a password reset link has been sent.');
-      // setError('Failed to send reset link. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+const handleRequestReset = async () => {
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
+    setError('Please enter a valid email address.');
+    return;
+  }
+  setError('');
+  setSuccessMessage('');
+  setIsLoading(true);
+  
+  try {
+    await apiClient.post('/auth/forgot-password', { email });
+    setSuccessMessage('OTP sent! Redirecting to password reset...');
+    
+    // Navigate to PasswordResetOtpScreen with email
+    setTimeout(() => {
+      navigation.navigate('PasswordResetOtp', { email });
+    }, 2000);
+    
+  } catch (err: any) {
+    console.error("Request password reset error:", err.response?.data || err.message);
+    setSuccessMessage('If an account exists for this email, an OTP has been sent.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <SafeAreaView style={styles.safeArea}>
