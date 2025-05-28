@@ -6,21 +6,33 @@ import {
   Button,
   ActivityIndicator,
   HelperText,
-  Card,
   Dialog,
   Portal,
+  Provider as PaperProvider, // Assuming you might use PaperProvider here too
+  DefaultTheme,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import apiClient from '../../services/api';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
 
+// Define your custom theme or import from a central theme file
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#800000', // Maroon
+    accent: '#800000',  // Maroon
+  },
+};
+const customFocusedColor = theme.colors.primary;
+
+
 type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
 
 const RegisterScreen = () => {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
 
-  // Registration Form State
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,14 +43,13 @@ const RegisterScreen = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // OTP Verification State
   const [otp, setOtp] = useState('');
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
   const [registeredEmail, setRegisteredEmail] = useState('');
-
-  const customFocusedColor = '#800000';
+  const [resendOtpLoading, setResendOtpLoading] = useState(false);
+  const [resendOtpMessage, setResendOtpMessage] = useState('');
 
   const validateForm = () => {
     if (!username.trim()) {
@@ -50,8 +61,12 @@ const RegisterScreen = () => {
       return false;
     }
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email address.');
+      setError('Please enter a valid LPU email address.');
       return false;
+    }
+    if (!email.endsWith('@lpu.edu.ph')) {
+        setError('Please use your LPU email address (ends with @lpu.edu.ph).');
+        return false;
     }
     if (!password) {
       setError('Password is required.');
@@ -82,15 +97,16 @@ const RegisterScreen = () => {
         password,
       });
 
-      console.log('Registration successful response:', response.data);
       setRegisteredEmail(email.trim().toLowerCase());
       setSuccessMessage('Registration successful! An OTP has been sent to your email for verification.');
       setOtpModalVisible(true);
+      setOtp(''); // Clear previous OTP
+      setOtpError('');
+      setResendOtpMessage('');
 
     } catch (err: any) {
       const apiErrorMessage = err.response?.data?.error || err.message || 'Registration failed. Please try again.';
       setError(apiErrorMessage);
-      console.error("Registration error details:", err.response?.data || err);
     } finally {
       setIsLoading(false);
     }
@@ -103,6 +119,7 @@ const RegisterScreen = () => {
     }
 
     setOtpError('');
+    setResendOtpMessage('');
     setOtpLoading(true);
 
     try {
@@ -119,7 +136,6 @@ const RegisterScreen = () => {
             text: "OK",
             onPress: () => {
               setOtpModalVisible(false);
-              // Clear all form data
               setUsername('');
               setEmail('');
               setPassword('');
@@ -127,7 +143,6 @@ const RegisterScreen = () => {
               setOtp('');
               setSuccessMessage('');
               setError('');
-              // Navigate to login
               navigation.navigate('Login');
             }
           }
@@ -137,7 +152,6 @@ const RegisterScreen = () => {
     } catch (err: any) {
       const apiErrorMessage = err.response?.data?.error || 'Failed to verify OTP. Please try again.';
       setOtpError(apiErrorMessage);
-      console.error("OTP verification error:", err.response?.data || err.message);
     } finally {
       setOtpLoading(false);
     }
@@ -145,180 +159,181 @@ const RegisterScreen = () => {
 
   const handleResendOtp = async () => {
     if (!registeredEmail) {
-      setOtpError('Email not found. Please try registering again.');
+      setOtpError('Email not found. Cannot resend OTP.');
       return;
     }
 
     setOtpError('');
-    setOtpLoading(true);
+    setResendOtpMessage('');
+    setResendOtpLoading(true);
 
     try {
-      // Call register again with resend flag or create a separate resend endpoint
-      await apiClient.post('/auth/resend-verification', { email: registeredEmail });
-      setOtpError(''); // Clear any previous errors
-      Alert.alert("OTP Resent", "A new OTP has been sent to your email.");
+      await apiClient.post('/auth/resend-otp', { email: registeredEmail, purpose: 'verification' });
+      setResendOtpMessage('A new OTP has been sent to your email.');
+      setOtp(''); // Clear current OTP input
     } catch (err: any) {
       const apiErrorMessage = err.response?.data?.error || 'Failed to resend OTP. Please try again.';
       setOtpError(apiErrorMessage);
-      console.error("Resend OTP error:", err.response?.data || err.message);
     } finally {
-      setOtpLoading(false);
+      setResendOtpLoading(false);
     }
   };
 
   const closeOtpModal = () => {
-    if (!otpLoading) {
+    if (!otpLoading && !resendOtpLoading) {
       setOtpModalVisible(false);
       setOtp('');
       setOtpError('');
+      setResendOtpMessage('');
     }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text variant="headlineLarge" style={styles.title}>Create Account</Text>
-        
-        <TextInput
-          label="Username"
-          value={username}
-          onChangeText={setUsername}
-          mode="outlined"
-          style={styles.input}
-          disabled={isLoading || otpModalVisible}
-          activeOutlineColor={customFocusedColor}
-          error={!!error && !username.trim()}
-        />
+    <PaperProvider theme={theme}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <Text variant="headlineLarge" style={styles.title}>Create Account</Text>
+          
+          <TextInput
+            label="Username"
+            value={username}
+            onChangeText={setUsername}
+            mode="outlined"
+            style={styles.input}
+            disabled={isLoading || otpModalVisible}
+            activeOutlineColor={customFocusedColor}
+            error={!!error && !username.trim()}
+          />
 
-        <TextInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          mode="outlined"
-          style={styles.input}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          disabled={isLoading || otpModalVisible}
-          activeOutlineColor={customFocusedColor}
-          error={!!error && (!email || !/\S+@\S+\.\S+/.test(email))}
-        />
+          <TextInput
+            label="LPU Email (@lpu.edu.ph)"
+            value={email}
+            onChangeText={setEmail}
+            mode="outlined"
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            disabled={isLoading || otpModalVisible}
+            activeOutlineColor={customFocusedColor}
+            error={!!error && (!email || !/\S+@\S+\.\S+/.test(email) || !email.endsWith('@lpu.edu.ph'))}
+          />
 
-        <TextInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          mode="outlined"
-          style={styles.input}
-          disabled={isLoading || otpModalVisible}
-          activeOutlineColor={customFocusedColor}
-          error={!!error && (!password || password.length < 6)}
-          right={
-            <TextInput.Icon
-              icon={showPassword ? "eye-off" : "eye"}
-              onPress={() => setShowPassword(!showPassword)}
-            />
-          }
-        />
-
-        <TextInput
-          label="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry={!showConfirmPassword}
-          mode="outlined"
-          style={styles.input}
-          disabled={isLoading || otpModalVisible}
-          activeOutlineColor={customFocusedColor}
-          error={!!error && (password !== confirmPassword)}
-          right={
-            <TextInput.Icon
-              icon={showConfirmPassword ? "eye-off" : "eye"}
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-            />
-          }
-        />
-
-        {error && <HelperText type="error" visible={!!error}>{error}</HelperText>}
-        {successMessage && !otpModalVisible && (
-          <HelperText type="info" visible={!!successMessage} style={styles.successText}>
-            {successMessage}
-          </HelperText>
-        )}
-
-        {isLoading ? (
-          <ActivityIndicator animating={true} color={customFocusedColor} style={styles.buttonActivity} />
-        ) : (
-          <Button
-            mode="contained"
-            onPress={handleRegister}
-            style={styles.button}
-            buttonColor={customFocusedColor}
-            disabled={otpModalVisible}
-          >
-            Register
-          </Button>
-        )}
-
-        <Button
-          mode="text"
-          onPress={() => navigation.navigate('Login')}
-          style={styles.linkButton}
-          textColor={customFocusedColor}
-          disabled={isLoading || otpModalVisible}
-        >
-          Already have an account? Sign In
-        </Button>
-
-        {/* OTP Verification Modal */}
-        <Portal>
-          <Dialog visible={otpModalVisible} onDismiss={closeOtpModal} dismissable={!otpLoading}>
-            <Dialog.Title>
-              <Text style={styles.dialogTitle}>Verify Your Email</Text>
-            </Dialog.Title>
-            <Dialog.Content>
-              <Text style={styles.otpDescription}>
-                An OTP has been sent to {registeredEmail}. Please enter it below to verify your account.
-              </Text>
-              <TextInput
-                label="Enter OTP"
-                value={otp}
-                onChangeText={setOtp}
-                keyboardType="number-pad"
-                mode="outlined"
-                style={styles.otpInput}
-                maxLength={6}
-                disabled={otpLoading}
-                activeOutlineColor={customFocusedColor}
-                error={!!otpError}
+          <TextInput
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            mode="outlined"
+            style={styles.input}
+            disabled={isLoading || otpModalVisible}
+            activeOutlineColor={customFocusedColor}
+            error={!!error && (!password || password.length < 6)}
+            right={
+              <TextInput.Icon
+                icon={showPassword ? "eye-off" : "eye"}
+                onPress={() => setShowPassword(!showPassword)}
               />
-              {otpError && <HelperText type="error" visible={!!otpError}>{otpError}</HelperText>}
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button 
-                onPress={handleResendOtp} 
-                disabled={otpLoading}
-                textColor={customFocusedColor}
-              >
-                Resend OTP
-              </Button>
-              <Button onPress={closeOtpModal} disabled={otpLoading}>
-                Cancel
-              </Button>
-              <Button 
-                onPress={handleVerifyOtp} 
-                loading={otpLoading} 
-                disabled={otpLoading}
-                buttonColor={customFocusedColor}
-                mode="contained"
-              >
-                Verify
-              </Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-      </View>
-    </SafeAreaView>
+            }
+          />
+
+          <TextInput
+            label="Confirm Password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={!showConfirmPassword}
+            mode="outlined"
+            style={styles.input}
+            disabled={isLoading || otpModalVisible}
+            activeOutlineColor={customFocusedColor}
+            error={!!error && (password !== confirmPassword)}
+            right={
+              <TextInput.Icon
+                icon={showConfirmPassword ? "eye-off" : "eye"}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              />
+            }
+          />
+
+          {error && <HelperText type="error" visible={!!error}>{error}</HelperText>}
+          {successMessage && !otpModalVisible && (
+            <HelperText type="info" visible={!!successMessage} style={styles.successText}>
+              {successMessage}
+            </HelperText>
+          )}
+
+          {isLoading ? (
+            <ActivityIndicator animating={true} color={customFocusedColor} style={styles.buttonActivity} />
+          ) : (
+            <Button
+              mode="contained"
+              onPress={handleRegister}
+              style={styles.button}
+              buttonColor={customFocusedColor}
+              disabled={otpModalVisible}
+            >
+              Register
+            </Button>
+          )}
+
+          <Button
+            mode="text"
+            onPress={() => navigation.navigate('Login')}
+            style={styles.linkButton}
+            textColor={customFocusedColor}
+            disabled={isLoading || otpModalVisible}
+          >
+            Already have an account? Sign In
+          </Button>
+
+          <Portal>
+            <Dialog visible={otpModalVisible} onDismiss={closeOtpModal} dismissable={!otpLoading && !resendOtpLoading}>
+              <Dialog.Content>
+                <Text style={styles.dialogTitleCustom}>Verify Your Email</Text>
+                <Text style={styles.otpDescription}>
+                  An OTP has been sent to {registeredEmail}. Please enter it below to verify your account.
+                </Text>
+                <TextInput
+                  label="Enter OTP"
+                  value={otp}
+                  onChangeText={setOtp}
+                  keyboardType="number-pad"
+                  mode="outlined"
+                  style={styles.otpInput}
+                  activeOutlineColor={customFocusedColor}
+                  maxLength={6}
+                  disabled={otpLoading || resendOtpLoading}
+                  error={!!otpError}
+                />
+                {otpError && <HelperText type="error" visible={!!otpError}>{otpError}</HelperText>}
+                {resendOtpMessage && !otpError && <HelperText type="info" visible={!!resendOtpMessage} style={{color: 'green'}}>{resendOtpMessage}</HelperText>}
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button 
+                  onPress={handleResendOtp} 
+                  disabled={otpLoading || resendOtpLoading}
+                  loading={resendOtpLoading}
+                  textColor={customFocusedColor}
+                >
+                  Resend OTP
+                </Button>
+                <Button onPress={closeOtpModal} disabled={otpLoading || resendOtpLoading}>
+                  Cancel
+                </Button>
+                <Button 
+                  onPress={handleVerifyOtp} 
+                  loading={otpLoading} 
+                  disabled={otpLoading || resendOtpLoading}
+                  buttonColor={customFocusedColor}
+                  mode="contained"
+                >
+                  Verify
+                </Button>
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
+        </View>
+      </SafeAreaView>
+    </PaperProvider>
   );
 };
 
@@ -330,18 +345,18 @@ const styles = StyleSheet.create({
   button: { marginTop: 20, paddingVertical: 5 },
   buttonActivity: { marginTop: 20, paddingVertical: 15 },
   linkButton: { marginTop: 15 },
-  dialogTitle: { 
-    textAlign: 'center',
-    color: '#800000',
-    fontSize: 20,
-    fontWeight: 'bold',
-    alignSelf: 'center',
-    width: '100%', 
-  },
   successText: {
     color: 'green',
     textAlign: 'center',
     marginBottom: 10,
+  },
+  dialogTitleCustom: {
+    textAlign: 'center',
+    color: '#800000',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    marginTop: 10,
   },
   otpDescription: {
     marginBottom: 15,

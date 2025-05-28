@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, View, Alert, RefreshControl } from 'react-native'; // Add RefreshControl
+import React, { useState, useEffect, useCallback } from 'react';
+import { ScrollView, StyleSheet, View, Alert, RefreshControl } from 'react-native';
 import {
   Text,
   TextInput,
   Button,
   Card,
-  Divider,
   ActivityIndicator,
   HelperText,
   Dialog,
   Portal,
   Provider as PaperProvider,
   DefaultTheme,
-  IconButton,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../services/api';
@@ -54,21 +52,24 @@ const AccountScreen = ({ navigation }: any) => {
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
+  const [resendOtpLoading, setResendOtpLoading] = useState(false);
+  const [resendOtpMessage, setResendOtpMessage] = useState('');
+
 
   // Pull to refresh state
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && !refreshing) { // Prevents overriding cleared field during refresh
       setNewUsername(user.username || '');
     }
-  }, [user]);
+  }, [user, refreshing]);
 
   // Pull to refresh function
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     
-    setNewUsername('');
+    setNewUsername(''); // Clear username field completely
     setCurrentPassword('');
     setNewPassword('');
     setConfirmNewPassword('');
@@ -80,6 +81,7 @@ const AccountScreen = ({ navigation }: any) => {
     setPasswordError(null);
     setPasswordSuccess(null);
     setOtpError(null);
+    setResendOtpMessage('');
     
     // Reset password visibility states
     setShowCurrentPassword(false);
@@ -89,11 +91,10 @@ const AccountScreen = ({ navigation }: any) => {
     // Close OTP modal if open
     setOtpModalVisible(false);
     
-    // Simulate a small delay for better UX
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
-  }, [user]);
+  }, []); // Removed user dependency to ensure fields are cleared as intended
 
   const handleUsernameChange = async () => {
     setUsernameError(null);
@@ -130,6 +131,7 @@ const AccountScreen = ({ navigation }: any) => {
     setPasswordError(null);
     setPasswordSuccess(null);
     setOtpError(null);
+    setResendOtpMessage('');
 
     if (!currentPassword || !newPassword || !confirmNewPassword) {
       setPasswordError('All password fields are required.');
@@ -153,6 +155,7 @@ const AccountScreen = ({ navigation }: any) => {
       const response = await apiClient.post('/auth/change-password', { currentPassword, newPassword });
       setPasswordSuccess(response.data.message || 'OTP sent to your email to confirm password change.');
       setOtpModalVisible(true);
+      setOtp(''); // Clear previous OTP
     } catch (err: any) {
       setPasswordError(err.response?.data?.error || 'Failed to initiate password change.');
       console.error("Password change initiation error:", err.response?.data || err);
@@ -163,6 +166,7 @@ const AccountScreen = ({ navigation }: any) => {
 
   const handleConfirmPasswordChangeWithOtp = async () => {
     setOtpError(null);
+    setResendOtpMessage('');
     if (!otp.trim()) {
       setOtpError('OTP is required.');
       return;
@@ -182,7 +186,6 @@ const AccountScreen = ({ navigation }: any) => {
       setNewPassword('');
       setConfirmNewPassword('');
       setPasswordError(null);
-      // Reset password visibility states
       setShowCurrentPassword(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
@@ -191,6 +194,29 @@ const AccountScreen = ({ navigation }: any) => {
       console.error("OTP confirmation error:", err.response?.data || err);
     } finally {
       setOtpLoading(false);
+    }
+  };
+
+  const handleResendChangePasswordOtp = async () => {
+    if (!user?.email) {
+        setOtpError('User email not found. Cannot resend OTP.');
+        return;
+    }
+
+    setOtpError(null);
+    setResendOtpMessage('');
+    setResendOtpLoading(true);
+
+    try {
+      await apiClient.post('/auth/resend-otp', { email: user.email, purpose: 'passwordChangeConfirmation' });
+      setResendOtpMessage('A new OTP has been sent to your email.');
+      setOtp(''); // Clear current OTP input
+    } catch (err: any) {
+      const apiErrorMessage = err.response?.data?.error || 'Failed to resend OTP.';
+      setOtpError(apiErrorMessage);
+      console.error("Resend Change Password OTP error:", err.response?.data || err);
+    } finally {
+      setResendOtpLoading(false);
     }
   };
 
@@ -207,10 +233,12 @@ const AccountScreen = ({ navigation }: any) => {
 
   if (!user) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator animating={true} color={theme.colors.primary} />
-        <Text>Loading user data...</Text>
-      </View>
+      <PaperProvider theme={theme}>
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator animating={true} color={theme.colors.primary} />
+          <Text>Loading user data...</Text>
+        </View>
+      </PaperProvider>
     );
   }
 
@@ -220,12 +248,12 @@ const AccountScreen = ({ navigation }: any) => {
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            refreshing={refreshing || usernameLoading || passwordLoading}
             onRefresh={onRefresh}
-            colors={[theme.colors.primary]} // Android
-            tintColor={theme.colors.primary} // iOS
-            title="Pull to refresh" // iOS only
-            titleColor={theme.colors.primary} // iOS only
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+            title="Pull to refresh"
+            titleColor={theme.colors.primary}
           />
         }
       >
@@ -252,8 +280,9 @@ const AccountScreen = ({ navigation }: any) => {
               onChangeText={setNewUsername}
               mode="outlined"
               style={styles.input}
+              activeOutlineColor={theme.colors.primary}
               error={!!usernameError}
-              disabled={refreshing} // Disable during refresh
+              disabled={refreshing || usernameLoading}
             />
             {usernameError && <HelperText type="error" visible={!!usernameError}>{usernameError}</HelperText>}
             {usernameSuccess && <HelperText type="info" visible={!!usernameSuccess} style={{color: 'green'}}>{usernameSuccess}</HelperText>}
@@ -261,8 +290,9 @@ const AccountScreen = ({ navigation }: any) => {
               mode="contained"
               onPress={handleUsernameChange}
               loading={usernameLoading}
-              disabled={usernameLoading || refreshing} // Disable during refresh
+              disabled={usernameLoading || refreshing}
               style={styles.button}
+              buttonColor={theme.colors.primary}
             >
               Update Username
             </Button>
@@ -279,12 +309,13 @@ const AccountScreen = ({ navigation }: any) => {
               secureTextEntry={!showCurrentPassword}
               mode="outlined"
               style={styles.input}
-              disabled={refreshing} // Disable during refresh
+              activeOutlineColor={theme.colors.primary}
+              disabled={refreshing || passwordLoading}
               right={
                 <TextInput.Icon
                   icon={showCurrentPassword ? "eye-off" : "eye"}
                   onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-                  disabled={refreshing}
+                  disabled={refreshing || passwordLoading}
                 />
               }
             />
@@ -295,12 +326,13 @@ const AccountScreen = ({ navigation }: any) => {
               secureTextEntry={!showNewPassword}
               mode="outlined"
               style={styles.input}
-              disabled={refreshing} // Disable during refresh
+              activeOutlineColor={theme.colors.primary}
+              disabled={refreshing || passwordLoading}
               right={
                 <TextInput.Icon
                   icon={showNewPassword ? "eye-off" : "eye"}
                   onPress={() => setShowNewPassword(!showNewPassword)}
-                  disabled={refreshing}
+                  disabled={refreshing || passwordLoading}
                 />
               }
             />
@@ -311,13 +343,14 @@ const AccountScreen = ({ navigation }: any) => {
               secureTextEntry={!showConfirmPassword}
               mode="outlined"
               style={styles.input}
+              activeOutlineColor={theme.colors.primary}
               error={!!passwordError && (newPassword !== confirmNewPassword || !confirmNewPassword)}
-              disabled={refreshing} // Disable during refresh
+              disabled={refreshing || passwordLoading}
               right={
                 <TextInput.Icon
                   icon={showConfirmPassword ? "eye-off" : "eye"}
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={refreshing}
+                  disabled={refreshing || passwordLoading}
                 />
               }
             />
@@ -327,8 +360,9 @@ const AccountScreen = ({ navigation }: any) => {
               mode="contained"
               onPress={handleChangePasswordInitiate}
               loading={passwordLoading}
-              disabled={passwordLoading || otpModalVisible || refreshing} // Disable during refresh
+              disabled={passwordLoading || otpModalVisible || refreshing}
               style={styles.button}
+              buttonColor={theme.colors.primary}
             >
               Change Password
             </Button>
@@ -341,13 +375,13 @@ const AccountScreen = ({ navigation }: any) => {
           style={[styles.button, styles.logoutButton]}
           icon="logout"
           textColor={theme.colors.primary}
-          disabled={refreshing} // Disable during refresh
+          disabled={refreshing}
         >
           Logout
         </Button>
 
         <Portal>
-          <Dialog visible={otpModalVisible} onDismiss={() => { if(!otpLoading) setOtpModalVisible(false); }}>
+          <Dialog visible={otpModalVisible} onDismiss={() => { if(!otpLoading && !resendOtpLoading) setOtpModalVisible(false); }} dismissable={!otpLoading && !resendOtpLoading}>
             <Dialog.Content>
               <Text style={styles.dialogTitleCustom}>Enter OTP</Text>
               <Text style={styles.dialogSubtitle}>An OTP has been sent to {user.email} to confirm your password change.</Text>
@@ -358,14 +392,33 @@ const AccountScreen = ({ navigation }: any) => {
                 keyboardType="number-pad"
                 mode="outlined"
                 style={styles.input}
+                activeOutlineColor={theme.colors.primary}
                 maxLength={6}
                 error={!!otpError}
+                disabled={otpLoading || resendOtpLoading}
               />
               {otpError && <HelperText type="error" visible={!!otpError}>{otpError}</HelperText>}
+              {resendOtpMessage && !otpError && <HelperText type="info" visible={!!resendOtpMessage} style={{color: 'green'}}>{resendOtpMessage}</HelperText>}
             </Dialog.Content>
             <Dialog.Actions>
-              <Button onPress={() => { if(!otpLoading) setOtpModalVisible(false); }} disabled={otpLoading}>Cancel</Button>
-              <Button onPress={handleConfirmPasswordChangeWithOtp} loading={otpLoading} disabled={otpLoading}>Confirm</Button>
+              <Button 
+                onPress={handleResendChangePasswordOtp} 
+                disabled={otpLoading || resendOtpLoading}
+                loading={resendOtpLoading}
+                textColor={theme.colors.primary}
+              >
+                Resend OTP
+              </Button>
+              <Button onPress={() => { if(!otpLoading && !resendOtpLoading) setOtpModalVisible(false); }} disabled={otpLoading || resendOtpLoading}>Cancel</Button>
+              <Button 
+                onPress={handleConfirmPasswordChangeWithOtp} 
+                loading={otpLoading} 
+                disabled={otpLoading || resendOtpLoading}
+                buttonColor={theme.colors.primary}
+                mode="contained"
+              >
+                Confirm
+              </Button>
             </Dialog.Actions>
           </Dialog>
         </Portal>
@@ -391,6 +444,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     marginBottom: 8,
+    alignItems: 'center',
   },
   label: {
     fontWeight: 'bold',
@@ -403,7 +457,7 @@ const styles = StyleSheet.create({
     color: '#555',
     flexShrink: 1,
   },
-  dialogTitleCustom: { // Fixed the dialog title styling
+  dialogTitleCustom: {
     textAlign: 'center',
     color: '#800000',
     fontSize: 20,

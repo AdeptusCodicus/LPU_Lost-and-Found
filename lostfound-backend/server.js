@@ -541,6 +541,107 @@ fastify.post("/auth/change-username", { preHandler: [verifyMultiple] }, async (r
   }
 });
 
+fastify.post("/auth/resend-otp", async (req, reply) => {
+  const { email, purpose } = req.body;
+
+  if (!email || !purpose) {
+    return reply.status(400).send({ error: "Email and purpose (e.g., 'verification', 'passwordReset', 'passwordChangeConfirmation') are required." });
+  }
+
+  if (purpose !== "verification" && purpose !== "passwordReset" && purpose !== "passwordChangeConfirmation") {
+    return reply.status(400).send({ error: "Invalid purpose. Must be 'verification', 'passwordReset', or 'passwordChangeConfirmation'." });
+  }
+
+  try {
+    const user = await db.select().from(users).where(eq(users.email, email)).get();
+
+    if (!user) {
+      // For password-related OTPs, use a generic message
+      if (purpose === "passwordReset" || purpose === "passwordChangeConfirmation") {
+        fastify.log.info(`OTP resend (${purpose}) requested for non-existent email: ${email}`);
+        return reply.send({ message: "If your email is registered and meets the criteria, an OTP will be sent." });
+      }
+      return reply.status(404).send({ error: "User not found." });
+    }
+
+    const plainOtp = generateOtp();
+    const hashedOtp = crypto.createHash('sha256').update(plainOtp).digest('hex');
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+
+    let emailResult;
+
+    if (purpose === "verification") {
+      if (user.isVerified) {
+        return reply.status(400).send({ message: "Account is already verified." });
+      }
+      await db.update(users)
+        .set({
+          verificationOtp: hashedOtp,
+          verificationOtpExpiresAt: otpExpires,
+        })
+        .where(eq(users.id, user.id))
+        .run();
+      
+      emailResult = await sendVerificationEmail(user.email, plainOtp);
+      if (!emailResult.success) {
+        fastify.log.error(`Failed to resend verification OTP to ${user.email}`, emailResult.errorDetail);
+      }
+      fastify.log.info(`Verification OTP resent attempt to ${user.email}`);
+      return reply.send({ message: "Verification OTP resent. Please check your email." });
+
+    } else if (purpose === "passwordReset") {
+      if (!user.isVerified) {
+         fastify.log.info(`Password reset OTP resend requested for unverified email: ${email}`);
+         return reply.send({ message: "If your email is registered and meets the criteria, an OTP will be sent." });
+      }
+      await db.update(users)
+        .set({
+          passwordResetOtp: hashedOtp,
+          passwordResetOtpExpiresAt: otpExpires,
+        })
+        .where(eq(users.id, user.id))
+        .run();
+
+      emailResult = await sendPasswordResetEmail(user.email, plainOtp);
+      if (!emailResult.success) {
+        fastify.log.error(`Failed to resend password reset OTP to ${user.email}`, emailResult.errorDetail);
+      }
+      fastify.log.info(`Password reset OTP resent attempt to ${user.email}`);
+      return reply.send({ message: "If your email is registered and meets the criteria, an OTP will be sent." });
+
+    } else if (purpose === "passwordChangeConfirmation") {
+      // Check if a password change was actually initiated
+      if (!user.pendingNewPasswordHash || !user.pendingPasswordChangeOtpExpiresAt) {
+        fastify.log.info(`Password change confirmation OTP resend requested for ${email}, but no pending change found.`);
+        return reply.status(400).send({ error: "No pending password change found to resend OTP for. Please initiate the password change again." });
+      }
+      // It's okay if the old OTP expired, we're generating a new one.
+      await db.update(users)
+        .set({
+          pendingPasswordChangeOtp: hashedOtp,
+          pendingPasswordChangeOtpExpiresAt: otpExpires,
+          // pendingNewPasswordHash remains as it was
+        })
+        .where(eq(users.id, user.id))
+        .run();
+      
+      emailResult = await sendPasswordChangeConfirmationEmail(user.email, plainOtp);
+      if (!emailResult.success) {
+        fastify.log.error(`Failed to resend password change confirmation OTP to ${user.email}`, emailResult.errorDetail);
+      }
+      fastify.log.info(`Password change confirmation OTP resent attempt to ${user.email}`);
+      return reply.send({ message: "Password change confirmation OTP resent. Please check your email." });
+    }
+    
+    // Fallback, should not be reached if purpose validation is correct
+    return reply.status(500).send({ error: "An unexpected error occurred processing the OTP purpose."});
+
+  } catch (error) {
+    fastify.log.error(error, `Error resending OTP for email ${email} and purpose ${purpose}`);
+    return reply.status(500).send({ error: "An internal server error occurred while attempting to resend the OTP." });
+  }
+});
+
 fastify.post("/admin/items", { preHandler: verifyAdmin }, async (req, reply) => {
   const { name, description, location, contact, date_found } = req.body;
   try {
