@@ -29,7 +29,9 @@
     "react-native-screens": "~4.10.0",
     "react-native-tab-view": "^4.1.0",
     "react-native-vector-icons": "^10.2.0",
-    "zustand": "^5.0.5"
+    "zustand": "^5.0.5",
+    "expo-dev-client": "~5.1.8",
+    "@react-native-community/viewpager": "5.0.11"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

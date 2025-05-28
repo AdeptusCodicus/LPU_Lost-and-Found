@@ -14,6 +14,7 @@ import {
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../services/api';
+import SafeAreaView from '../../components/CustomSafeAreaView';
 
 const theme = {
   ...DefaultTheme,
@@ -218,195 +219,197 @@ const AccountScreen = ({ navigation }: any) => {
   if (!user) {
     return (
       <PaperProvider theme={theme}>
-        <View style={styles.loaderContainer}>
+        <SafeAreaView style={styles.loaderContainer}>
           <ActivityIndicator animating={true} color={theme.colors.primary} />
           <Text>Loading user data...</Text>
-        </View>
+        </SafeAreaView>
       </PaperProvider>
     );
   }
 
   return (
     <PaperProvider theme={theme}>
-      <ScrollView 
-        contentContainerStyle={styles.container}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing || usernameLoading || passwordLoading}
-            onRefresh={onRefresh}
-            colors={[theme.colors.primary]}
-            tintColor={theme.colors.primary}
-            title="Pull to refresh"
-            titleColor={theme.colors.primary}
-          />
-        }
-      >
-        <Card style={styles.card}>
-          <Card.Title title="Account Information" titleStyle={{color: theme.colors.primary}} />
-          <Card.Content>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Email:</Text>
-              <Text style={styles.value}>{user.email}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Username:</Text>
-              <Text style={styles.value}>{user.username}</Text>
-            </View>
-          </Card.Content>
-        </Card>
-
-        <Card style={styles.card}>
-          <Card.Title title="Change Username" titleStyle={{color: theme.colors.primary}}/>
-          <Card.Content>
-            <TextInput
-              label="New Username"
-              value={newUsername}
-              onChangeText={setNewUsername}
-              mode="outlined"
-              style={styles.input}
-              activeOutlineColor={theme.colors.primary}
-              error={!!usernameError}
-              disabled={refreshing || usernameLoading}
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView 
+          contentContainerStyle={styles.container}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing || usernameLoading || passwordLoading}
+              onRefresh={onRefresh}
+              colors={[theme.colors.primary]}
+              tintColor={theme.colors.primary}
+              title="Pull to refresh"
+              titleColor={theme.colors.primary}
             />
-            {usernameError && <HelperText type="error" visible={!!usernameError}>{usernameError}</HelperText>}
-            {usernameSuccess && <HelperText type="info" visible={!!usernameSuccess} style={{color: 'green'}}>{usernameSuccess}</HelperText>}
-            <Button
-              mode="contained"
-              onPress={handleUsernameChange}
-              loading={usernameLoading}
-              disabled={usernameLoading || refreshing}
-              style={styles.button}
-              buttonColor={theme.colors.primary}
-            >
-              Update Username
-            </Button>
-          </Card.Content>
-        </Card>
-
-        <Card style={styles.card}>
-          <Card.Title title="Change Password" titleStyle={{color: theme.colors.primary}}/>
-          <Card.Content>
-            <TextInput
-              label="Current Password"
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-              secureTextEntry={!showCurrentPassword}
-              mode="outlined"
-              style={styles.input}
-              activeOutlineColor={theme.colors.primary}
-              disabled={refreshing || passwordLoading}
-              right={
-                <TextInput.Icon
-                  icon={showCurrentPassword ? "eye-off" : "eye"}
-                  onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-                  disabled={refreshing || passwordLoading}
-                />
-              }
-            />
-            <TextInput
-              label="New Password"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry={!showNewPassword}
-              mode="outlined"
-              style={styles.input}
-              activeOutlineColor={theme.colors.primary}
-              disabled={refreshing || passwordLoading}
-              right={
-                <TextInput.Icon
-                  icon={showNewPassword ? "eye-off" : "eye"}
-                  onPress={() => setShowNewPassword(!showNewPassword)}
-                  disabled={refreshing || passwordLoading}
-                />
-              }
-            />
-            <TextInput
-              label="Confirm New Password"
-              value={confirmNewPassword}
-              onChangeText={setConfirmNewPassword}
-              secureTextEntry={!showConfirmPassword}
-              mode="outlined"
-              style={styles.input}
-              activeOutlineColor={theme.colors.primary}
-              error={!!passwordError && (newPassword !== confirmNewPassword || !confirmNewPassword)}
-              disabled={refreshing || passwordLoading}
-              right={
-                <TextInput.Icon
-                  icon={showConfirmPassword ? "eye-off" : "eye"}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={refreshing || passwordLoading}
-                />
-              }
-            />
-            {passwordError && <HelperText type="error" visible={!!passwordError}>{passwordError}</HelperText>}
-            {passwordSuccess && !otpModalVisible && <HelperText type="info" visible={!!passwordSuccess} style={{color: 'green'}}>{passwordSuccess}</HelperText>}
-            <Button
-              mode="contained"
-              onPress={handleChangePasswordInitiate}
-              loading={passwordLoading}
-              disabled={passwordLoading || otpModalVisible || refreshing}
-              style={styles.button}
-              buttonColor={theme.colors.primary}
-            >
-              Change Password
-            </Button>
-          </Card.Content>
-        </Card>
-
-        <Button
-          mode="outlined"
-          onPress={handleLogout}
-          style={[styles.button, styles.logoutButton]}
-          icon="logout"
-          textColor={theme.colors.primary}
-          disabled={refreshing}
+          }
         >
-          Logout
-        </Button>
+          <Card style={styles.card}>
+            <Card.Title title="Account Information" titleStyle={{color: theme.colors.primary}} />
+            <Card.Content>
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Email:</Text>
+                <Text style={styles.value}>{user.email}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Username:</Text>
+                <Text style={styles.value}>{user.username}</Text>
+              </View>
+            </Card.Content>
+          </Card>
 
-        <Portal>
-          <Dialog visible={otpModalVisible} onDismiss={() => { if(!otpLoading && !resendOtpLoading) setOtpModalVisible(false); }} dismissable={!otpLoading && !resendOtpLoading}>
-            <Dialog.Content>
-              <Text style={styles.dialogTitleCustom}>Enter OTP</Text>
-              <Text style={styles.dialogSubtitle}>An OTP has been sent to {user.email} to confirm your password change.</Text>
+          <Card style={styles.card}>
+            <Card.Title title="Change Username" titleStyle={{color: theme.colors.primary}}/>
+            <Card.Content>
               <TextInput
-                label="OTP"
-                value={otp}
-                onChangeText={setOtp}
-                keyboardType="number-pad"
+                label="New Username"
+                value={newUsername}
+                onChangeText={setNewUsername}
                 mode="outlined"
                 style={styles.input}
                 activeOutlineColor={theme.colors.primary}
-                maxLength={6}
-                error={!!otpError}
-                disabled={otpLoading || resendOtpLoading}
+                error={!!usernameError}
+                disabled={refreshing || usernameLoading}
               />
-              {otpError && <HelperText type="error" visible={!!otpError}>{otpError}</HelperText>}
-              {resendOtpMessage && !otpError && <HelperText type="info" visible={!!resendOtpMessage} style={{color: 'green'}}>{resendOtpMessage}</HelperText>}
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button 
-                onPress={handleResendChangePasswordOtp} 
-                disabled={otpLoading || resendOtpLoading}
-                loading={resendOtpLoading}
-                textColor={theme.colors.primary}
-              >
-                Resend OTP
-              </Button>
-              <Button onPress={() => { if(!otpLoading && !resendOtpLoading) setOtpModalVisible(false); }} disabled={otpLoading || resendOtpLoading}>Cancel</Button>
-              <Button 
-                onPress={handleConfirmPasswordChangeWithOtp} 
-                loading={otpLoading} 
-                disabled={otpLoading || resendOtpLoading}
-                buttonColor={theme.colors.primary}
+              {usernameError && <HelperText type="error" visible={!!usernameError}>{usernameError}</HelperText>}
+              {usernameSuccess && <HelperText type="info" visible={!!usernameSuccess} style={{color: 'green'}}>{usernameSuccess}</HelperText>}
+              <Button
                 mode="contained"
+                onPress={handleUsernameChange}
+                loading={usernameLoading}
+                disabled={usernameLoading || refreshing}
+                style={styles.button}
+                buttonColor={theme.colors.primary}
               >
-                Confirm
+                Update Username
               </Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-      </ScrollView>
+            </Card.Content>
+          </Card>
+
+          <Card style={styles.card}>
+            <Card.Title title="Change Password" titleStyle={{color: theme.colors.primary}}/>
+            <Card.Content>
+              <TextInput
+                label="Current Password"
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                secureTextEntry={!showCurrentPassword}
+                mode="outlined"
+                style={styles.input}
+                activeOutlineColor={theme.colors.primary}
+                disabled={refreshing || passwordLoading}
+                right={
+                  <TextInput.Icon
+                    icon={showCurrentPassword ? "eye-off" : "eye"}
+                    onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                    disabled={refreshing || passwordLoading}
+                  />
+                }
+              />
+              <TextInput
+                label="New Password"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry={!showNewPassword}
+                mode="outlined"
+                style={styles.input}
+                activeOutlineColor={theme.colors.primary}
+                disabled={refreshing || passwordLoading}
+                right={
+                  <TextInput.Icon
+                    icon={showNewPassword ? "eye-off" : "eye"}
+                    onPress={() => setShowNewPassword(!showNewPassword)}
+                    disabled={refreshing || passwordLoading}
+                  />
+                }
+              />
+              <TextInput
+                label="Confirm New Password"
+                value={confirmNewPassword}
+                onChangeText={setConfirmNewPassword}
+                secureTextEntry={!showConfirmPassword}
+                mode="outlined"
+                style={styles.input}
+                activeOutlineColor={theme.colors.primary}
+                error={!!passwordError && (newPassword !== confirmNewPassword || !confirmNewPassword)}
+                disabled={refreshing || passwordLoading}
+                right={
+                  <TextInput.Icon
+                    icon={showConfirmPassword ? "eye-off" : "eye"}
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    disabled={refreshing || passwordLoading}
+                  />
+                }
+              />
+              {passwordError && <HelperText type="error" visible={!!passwordError}>{passwordError}</HelperText>}
+              {passwordSuccess && !otpModalVisible && <HelperText type="info" visible={!!passwordSuccess} style={{color: 'green'}}>{passwordSuccess}</HelperText>}
+              <Button
+                mode="contained"
+                onPress={handleChangePasswordInitiate}
+                loading={passwordLoading}
+                disabled={passwordLoading || otpModalVisible || refreshing}
+                style={styles.button}
+                buttonColor={theme.colors.primary}
+              >
+                Change Password
+              </Button>
+            </Card.Content>
+          </Card>
+
+          <Button
+            mode="outlined"
+            onPress={handleLogout}
+            style={[styles.button, styles.logoutButton]}
+            icon="logout"
+            textColor={theme.colors.primary}
+            disabled={refreshing}
+          >
+            Logout
+          </Button>
+
+          <Portal>
+            <Dialog visible={otpModalVisible} onDismiss={() => { if(!otpLoading && !resendOtpLoading) setOtpModalVisible(false); }} dismissable={!otpLoading && !resendOtpLoading}>
+              <Dialog.Content>
+                <Text style={styles.dialogTitleCustom}>Enter OTP</Text>
+                <Text style={styles.dialogSubtitle}>An OTP has been sent to {user.email} to confirm your password change.</Text>
+                <TextInput
+                  label="OTP"
+                  value={otp}
+                  onChangeText={setOtp}
+                  keyboardType="number-pad"
+                  mode="outlined"
+                  style={styles.input}
+                  activeOutlineColor={theme.colors.primary}
+                  maxLength={6}
+                  error={!!otpError}
+                  disabled={otpLoading || resendOtpLoading}
+                />
+                {otpError && <HelperText type="error" visible={!!otpError}>{otpError}</HelperText>}
+                {resendOtpMessage && !otpError && <HelperText type="info" visible={!!resendOtpMessage} style={{color: 'green'}}>{resendOtpMessage}</HelperText>}
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button 
+                  onPress={handleResendChangePasswordOtp} 
+                  disabled={otpLoading || resendOtpLoading}
+                  loading={resendOtpLoading}
+                  textColor={theme.colors.primary}
+                >
+                  Resend OTP
+                </Button>
+                <Button onPress={() => { if(!otpLoading && !resendOtpLoading) setOtpModalVisible(false); }} disabled={otpLoading || resendOtpLoading}>Cancel</Button>
+                <Button 
+                  onPress={handleConfirmPasswordChangeWithOtp} 
+                  loading={otpLoading} 
+                  disabled={otpLoading || resendOtpLoading}
+                  buttonColor={theme.colors.primary}
+                  mode="contained"
+                >
+                  Confirm
+                </Button>
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
+        </ScrollView>
+      </SafeAreaView>
     </PaperProvider>
   );
 };

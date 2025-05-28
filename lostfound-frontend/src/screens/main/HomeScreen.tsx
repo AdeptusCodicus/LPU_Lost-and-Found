@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useAuth } from '../../contexts/AuthContext';
 import { Searchbar } from 'react-native-paper';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import SafeAreaView from '../../components/CustomSafeAreaView';
 
 import FoundItemsScreen from './FoundItemsScreen';
 import LostItemsScreen from './LostItemsScreen';
@@ -66,6 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', 
   },
   searchbar: {
+    marginTop: -30,
   },
 });
 

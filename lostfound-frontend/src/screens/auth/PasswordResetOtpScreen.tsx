@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
+import SafeAreaView from '../../components/CustomSafeAreaView'
 import { 
   Text, 
   Button, 

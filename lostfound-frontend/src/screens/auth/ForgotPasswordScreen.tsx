@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Text, Button, TextInput, ActivityIndicator, HelperText } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import apiClient from '../../services/api';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
+import SafeAreaView from '../../components/CustomSafeAreaView';
 
 type ForgotPasswordScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
 
