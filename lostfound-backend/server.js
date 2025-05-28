@@ -58,7 +58,7 @@ function broadcastToAdmins(data) {
   const message = JSON.stringify(data);
   console.log("Broadcasting message to ADMINS:", message);
   for (const conn of connections){
-    if (conn.userData && conn.userData.email && conn.userData.email.endsWith("@lpuadmin.edu.ph" || "matthewvaldoria14@gmail.com")) { //remove gmail in prod
+    if (conn.userData && conn.userData.email && conn.userData.email.endsWith("@lpuadmin.edu.ph" || "somedudein@gmail.com")) { //remove gmail in prod
       try {
         if (conn.readyState === 1){
           conn.send(message);
@@ -142,7 +142,7 @@ function verifyAdmin(req, reply, done) {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return reply.status(401).send({ error: "No token provided" });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded.email.endsWith("@lpuadmin.edu.ph" && "matthewvaldoria14@gmail.com")) { //remove gmail in prod
+    if (!decoded.email.endsWith("@lpuadmin.edu.ph" || "somedudein@gmail.com")) { //remove gmail in prod
       return reply.status(403).send({ error: "Admin access only" });
     }
     req.user = decoded;
@@ -158,7 +158,7 @@ function verifyUser(req, reply, done) {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return reply.status(401).send({ error: "No token provided" });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded.email.endsWith(!decoded.email.endsWith("@lpunetwork.edu.ph") && !decoded.email.endsWith("@gmail.com"))) { //Remove gmail in prod
+    if (!decoded.email.endsWith("@lpunetwork.edu.ph" || "@gmail.com")) { //Remove gmail in prod
       return reply.status(403).send({ error: "User access only" }); 
     }
     req.user = decoded;
