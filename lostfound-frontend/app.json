@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -17,15 +17,15 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.valdoria_software_works.lpulaf"
+      "bundleIdentifier": "works.valdoria-software.lpulaf"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#800000"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.valdoria_software_works.lpulaf"
+      "edgeToEdgeEnabled": false,
+      "package": "works.valdoria_software.lpulaf"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,7 +35,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "714bd5ae-0a4a-4a12-b8b6-0d0d91b507e2"
+        "projectId": "eee85606-ed32-411c-ba9e-43d16a0e70c3"
       }
     }
   }

@@ -229,7 +229,7 @@ const AccountScreen = ({ navigation }: any) => {
 
   return (
     <PaperProvider theme={theme}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 0, paddingTop: 0 }}>
         <ScrollView 
           contentContainerStyle={styles.container}
           refreshControl={
@@ -244,7 +244,7 @@ const AccountScreen = ({ navigation }: any) => {
           }
         >
           <Card style={styles.card}>
-            <Card.Title title="Account Information" titleStyle={{color: theme.colors.primary}} />
+            <Card.Title title="Account Information" titleStyle={{color: theme.colors.primary, fontWeight: 'bold'}} />
             <Card.Content>
               <View style={styles.infoRow}>
                 <Text style={styles.label}>Email:</Text>
@@ -258,7 +258,7 @@ const AccountScreen = ({ navigation }: any) => {
           </Card>
 
           <Card style={styles.card}>
-            <Card.Title title="Change Username" titleStyle={{color: theme.colors.primary}}/>
+            <Card.Title title="Change Username" titleStyle={{color: theme.colors.primary, fontWeight: 'bold'}}/>
             <Card.Content>
               <TextInput
                 label="New Username"
@@ -286,7 +286,7 @@ const AccountScreen = ({ navigation }: any) => {
           </Card>
 
           <Card style={styles.card}>
-            <Card.Title title="Change Password" titleStyle={{color: theme.colors.primary}}/>
+            <Card.Title title="Change Password" titleStyle={{color: theme.colors.primary, fontWeight: 'bold'}}/>
             <Card.Content>
               <TextInput
                 label="Current Password"
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    marginBottom: 15,
+    marginBottom: 10,
     elevation: 2,
   },
   infoRow: {
@@ -458,13 +458,13 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   input: {
-    marginBottom: 10,
+    marginBottom: 5,
   },
   button: {
     marginTop: 10,
   },
   logoutButton: {
-    marginTop: 20,
+    marginTop: 10,
     borderColor: '#800000',
   },
 });

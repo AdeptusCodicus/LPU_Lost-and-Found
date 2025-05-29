@@ -63,11 +63,12 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 5,
     backgroundColor: '#fff', 
   },
   searchbar: {
     marginTop: -30,
+    marginBottom: 3,
   },
 });
 
