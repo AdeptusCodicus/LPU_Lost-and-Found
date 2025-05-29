@@ -1,10 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, TouchableOpacity, ScrollView } from 'react-native';
-import { Text, Card, ActivityIndicator, Chip, Button, Modal, Portal, Divider } from 'react-native-paper';
+import { Text, Card, ActivityIndicator, Chip, Button, Modal, Portal, Divider, Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import apiClient from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#800000',
+    accent: '#800000',
+  },
+};
 interface ReportItem {
   id: number | string;
   name: string;
@@ -87,35 +95,37 @@ const MyReportsScreen = () => {
   };
 
   const renderItem = ({ item }: { item: ReportItem }) => (
-    <TouchableOpacity onPress={() => showModal(item)}>
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
-          <View style={styles.row}>
-            <Text variant="bodyMedium" style={styles.label}>Type:</Text>
-            <Chip
-              icon={item.type === 'found' ? "magnify-plus-outline" : "magnify-minus-outline"}
-              style={[styles.chip, { backgroundColor: item.type === 'found' ? '#BBDEFB' : '#FFCDD2' }]}
-              textStyle={styles.chipText}
-            >
-              {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-            </Chip>
-          </View>
-          <View style={styles.row}>
-            <Text variant="bodyMedium" style={styles.label}>Status:</Text>
-            <Chip
-              style={[styles.chip, { backgroundColor: getStatusColor(item.status) }]}
-              textStyle={styles.chipText}
-            >
-              {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-            </Chip>
-          </View>
-          <Text variant="bodySmall" style={styles.dateText}>
-            Reported on: {new Date(item.date_reported).toLocaleDateString()}
-          </Text>
-        </Card.Content>
-      </Card>
-    </TouchableOpacity>
+    <PaperProvider theme={theme}>
+      <TouchableOpacity onPress={() => showModal(item)}>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+            <View style={styles.row}>
+              <Text variant="bodyMedium" style={styles.label}>Type:</Text>
+              <Chip
+                icon={item.type === 'found' ? "magnify-plus-outline" : "magnify-minus-outline"}
+                style={[styles.chip, { backgroundColor: item.type === 'found' ? '#BBDEFB' : '#FFCDD2' }]}
+                textStyle={styles.chipText}
+              >
+                {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+              </Chip>
+            </View>
+            <View style={styles.row}>
+              <Text variant="bodyMedium" style={styles.label}>Status:</Text>
+              <Chip
+                style={[styles.chip, { backgroundColor: getStatusColor(item.status) }]}
+                textStyle={styles.chipText}
+              >
+                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+              </Chip>
+            </View>
+            <Text variant="bodySmall" style={styles.dateText}>
+              Reported on: {new Date(item.date_reported).toLocaleDateString()}
+            </Text>
+          </Card.Content>
+        </Card>
+      </TouchableOpacity>
+    </PaperProvider>  
   );
 
   if (isLoading && !refreshing && reports.length === 0) {
@@ -136,7 +146,7 @@ const MyReportsScreen = () => {
   }
 
   return (
-    <>
+    <PaperProvider theme={theme}>
       <FlatList
         data={reports}
         renderItem={renderItem}
@@ -194,7 +204,7 @@ const MyReportsScreen = () => {
           )}
         </Modal>
       </Portal>
-    </>
+    </PaperProvider>
   );
 };
 

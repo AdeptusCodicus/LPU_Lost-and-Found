@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "LPU Lost and Found",
+    "name": "LPU Lost & Found",
     "slug": "lpu-laf",
-    "version": "1.0.0-alpha.1",
+    "version": "0.9.0-beta.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F9F7F5"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -22,7 +22,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#800000"
+        "backgroundColor": "#F9F7F5"
       },
       "edgeToEdgeEnabled": false,
       "package": "works.valdoria_software.lpulaf"
@@ -35,7 +35,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "eee85606-ed32-411c-ba9e-43d16a0e70c3"
+        "projectId": "714bd5ae-0a4a-4a12-b8b6-0d0d91b507e2"
       }
     }
   }

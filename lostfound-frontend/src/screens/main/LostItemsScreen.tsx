@@ -1,10 +1,18 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, TouchableOpacity, ScrollView } from 'react-native';
-import { Text, Card, ActivityIndicator, Modal, Portal, Button, Divider } from 'react-native-paper';
+import { Text, Card, ActivityIndicator, Modal, Portal, Button, Divider, Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import apiClient from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#800000',
+    accent: '#800000',
+  },
+};
 interface LostItem {
   id: number | string;
   name: string;
@@ -84,15 +92,17 @@ const LostItemsScreen: React.FC<LostItemsScreenProps> = ({ searchQuery }) => {
   }, [allItems, searchQuery]);
 
   const renderItem = ({ item }: { item: LostItem }) => (
-    <TouchableOpacity onPress={() => showModal(item)}>
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
-          <Text variant="bodySmall" style={styles.cardSubtitle}>Last Seen: {item.location}</Text>
-          <Text variant="bodySmall" style={styles.cardSubtitle}>Date Lost: {new Date(item.date_lost).toLocaleDateString()}</Text>
-        </Card.Content>
-      </Card>
-    </TouchableOpacity>
+    <PaperProvider theme={theme}>
+      <TouchableOpacity onPress={() => showModal(item)}>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+            <Text variant="bodySmall" style={styles.cardSubtitle}>Last Seen: {item.location}</Text>
+            <Text variant="bodySmall" style={styles.cardSubtitle}>Date Lost: {new Date(item.date_lost).toLocaleDateString()}</Text>
+          </Card.Content>
+        </Card>
+      </TouchableOpacity>
+    </PaperProvider>  
   );
 
   if (isLoading && !refreshing && allItems.length === 0) {
@@ -114,7 +124,7 @@ const LostItemsScreen: React.FC<LostItemsScreenProps> = ({ searchQuery }) => {
   }
 
   return (
-    <>
+    <PaperProvider theme={theme}>
       <FlatList
         data={filteredItems}
         renderItem={renderItem}
@@ -176,7 +186,7 @@ const LostItemsScreen: React.FC<LostItemsScreenProps> = ({ searchQuery }) => {
           )}
         </Modal>
       </Portal>
-    </>
+    </PaperProvider>
   );
 };
 

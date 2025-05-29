@@ -7,6 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
 import SafeAreaView from '../../components/CustomSafeAreaView';
 
+
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 const LoginScreen = () => {
@@ -50,75 +51,75 @@ const LoginScreen = () => {
   const displayError = authError || formError;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-        <Text variant="headlineMedium" style={styles.title}>Login</Text>
+      <SafeAreaView style={styles.safeArea}>
+          <View style={styles.container}>
+          <Text variant="headlineMedium" style={styles.title}>Login</Text>
 
-         <TextInput
-             label="LPU Email"
-             value={email}
-             onChangeText={setEmail}
-             style={styles.input}
-             mode="outlined"
-             disabled={isSubmitting || authIsLoading}
-             activeOutlineColor={customFocusedColor}
-             keyboardType="email-address"
-             autoCapitalize="none"
-         />
-         <TextInput
-             label="Password"
-             value={password}
-             onChangeText={setPassword}
-             secureTextEntry={!showPassword}
-             style={styles.input}
-             mode="outlined"
-             disabled={isSubmitting || authIsLoading}
-             activeOutlineColor={customFocusedColor}
-             right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={toggleShowPassword} />}
-         />
+          <TextInput
+              label="LPU Email"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+              mode="outlined"
+              disabled={isSubmitting || authIsLoading}
+              activeOutlineColor={customFocusedColor}
+              keyboardType="email-address"
+              autoCapitalize="none"
+          />
+          <TextInput
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              style={styles.input}
+              mode="outlined"
+              disabled={isSubmitting || authIsLoading}
+              activeOutlineColor={customFocusedColor}
+              right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={toggleShowPassword} />}
+          />
 
-        <View style={styles.forgotPasswordContainer}>
-          <Button
-            mode="text"
-            onPress={() => navigation.navigate('ForgotPassword')}
-            compact
-            disabled={isSubmitting || authIsLoading}
-            labelStyle={styles.forgotPasswordLabel}
-          >
-            Forgot Password?
-          </Button>
-        </View>
-
-        {displayError ? (
-            <HelperText type="error" visible={!!displayError} style={styles.errorText}>
-              {displayError}
-            </HelperText>
-        ) : null}
-
-        {(authIsLoading) ? ( 
-            <ActivityIndicator animating={true} color="#800000" style={styles.buttonActivity} />
-        ) : (
+          <View style={styles.forgotPasswordContainer}>
             <Button
-            mode="contained"
-            onPress={handleLogin}
-            style={styles.button}
-            buttonColor="#800000"
-            disabled={isSubmitting} 
+              mode="text"
+              onPress={() => navigation.navigate('ForgotPassword')}
+              compact
+              disabled={isSubmitting || authIsLoading}
+              labelStyle={styles.forgotPasswordLabel}
             >
-            Login
+              Forgot Password?
             </Button>
-        )}
-        <Button
-            mode="text"
-            onPress={() => navigation.navigate('Register')}
-            style={styles.registerLink}
-            textColor="#800000"
-            disabled={isSubmitting || authIsLoading}
-        >
-            Don't have an account? Sign Up
-        </Button>
-        </View>
-    </SafeAreaView>
+          </View>
+
+          {displayError ? (
+              <HelperText type="error" visible={!!displayError} style={styles.errorText}>
+                {displayError}
+              </HelperText>
+          ) : null}
+
+          {(authIsLoading) ? ( 
+              <ActivityIndicator animating={true} color="#800000" style={styles.buttonActivity} />
+          ) : (
+              <Button
+              mode="contained"
+              onPress={handleLogin}
+              style={styles.button}
+              buttonColor="#800000"
+              disabled={isSubmitting} 
+              >
+              Login
+              </Button>
+          )}
+          <Button
+              mode="text"
+              onPress={() => navigation.navigate('Register')}
+              style={styles.registerLink}
+              textColor="#800000"
+              disabled={isSubmitting || authIsLoading}
+          >
+              Don't have an account? Sign Up
+          </Button>
+          </View>
+      </SafeAreaView>
   );
 };
 

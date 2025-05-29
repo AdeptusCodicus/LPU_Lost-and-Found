@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text, Button, TextInput, ActivityIndicator, HelperText } from 'react-native-paper';
+import {
+  Text,
+  TextInput,
+  Button,
+  ActivityIndicator,
+  HelperText,
+  Dialog,
+  Portal,
+} from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import apiClient from '../../services/api';
@@ -43,49 +51,49 @@ const handleRequestReset = async () => {
 };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text variant="headlineMedium" style={styles.title}>Forgot Password</Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>
-          Enter your email address and we'll send you a link to reset your password.
-        </Text>
-        <TextInput
-          label="LPU Email"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-          mode="outlined"
-          disabled={isLoading}
-          activeOutlineColor={customFocusedColor}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        {error && <HelperText type="error" visible={!!error}>{error}</HelperText>}
-        {successMessage && <HelperText type="info" visible={!!successMessage}>{successMessage}</HelperText>}
-        {isLoading ? (
-          <ActivityIndicator animating={true} color={customFocusedColor} style={styles.buttonActivity} />
-        ) : (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <Text variant="headlineMedium" style={styles.title}>Forgot Password</Text>
+          <Text variant="bodyMedium" style={styles.subtitle}>
+            Enter your email address and we'll send you a link to reset your password.
+          </Text>
+          <TextInput
+            label="LPU Email"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+            mode="outlined"
+            disabled={isLoading}
+            activeOutlineColor={customFocusedColor}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          {error && <HelperText type="error" visible={!!error}>{error}</HelperText>}
+          {successMessage && <HelperText type="info" visible={!!successMessage}>{successMessage}</HelperText>}
+          {isLoading ? (
+            <ActivityIndicator animating={true} color={customFocusedColor} style={styles.buttonActivity} />
+          ) : (
+            <Button
+              mode="contained"
+              onPress={handleRequestReset}
+              style={styles.button}
+              buttonColor={customFocusedColor}
+              disabled={!!successMessage}
+            >
+              Send Reset Link
+            </Button>
+          )}
           <Button
-            mode="contained"
-            onPress={handleRequestReset}
-            style={styles.button}
-            buttonColor={customFocusedColor}
-            disabled={!!successMessage}
+            mode="text"
+            onPress={() => navigation.goBack()}
+            style={styles.backLink}
+            textColor={customFocusedColor}
+            disabled={isLoading}
           >
-            Send Reset Link
+            Back to Login
           </Button>
-        )}
-        <Button
-          mode="text"
-          onPress={() => navigation.goBack()}
-          style={styles.backLink}
-          textColor={customFocusedColor}
-          disabled={isLoading}
-        >
-          Back to Login
-        </Button>
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
   );
 };
 
