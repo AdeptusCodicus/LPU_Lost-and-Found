@@ -909,12 +909,12 @@ fastify.post("/admin/lost-items/:id/mark-found", { preHandler: verifyAdmin }, as
 });
 
 fastify.get("/found-items", { preHandler: verifyMultiple }, async (req, reply) => {
-  const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).orderBy(desc(foundItem.id)).all();
+  const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).orderBy(desc(foundItems.id)).all();
   reply.send({ items });
 });
 
 fastify.get("/lost-items", { preHandler: verifyMultiple }, async (req, reply) => {
-  const items = await db.select().from(lostItems).where(eq(lostItems.status, "missing")).all();
+  const items = await db.select().from(lostItems).where(eq(lostItems.status, "missing")).orderBy(desc(lostItems.id)).all();
   reply.send({ items });
 });
 
