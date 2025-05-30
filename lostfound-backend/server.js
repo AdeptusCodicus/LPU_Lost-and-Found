@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { drizzle } from "drizzle-orm/libsql";
 import { users, foundItems, lostItems, reportedItems } from "./db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc, desc } from "drizzle-orm";
 import { createClient } from "@libsql/client";
 import fastifyWebsocket from "@fastify/websocket";
 import crypto from "crypto";
@@ -909,7 +909,7 @@ fastify.post("/admin/lost-items/:id/mark-found", { preHandler: verifyAdmin }, as
 });
 
 fastify.get("/found-items", { preHandler: verifyMultiple }, async (req, reply) => {
-  const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).all();
+  const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).orderBy(desc(foundItem.id)).all();
   reply.send({ items });
 });
 
