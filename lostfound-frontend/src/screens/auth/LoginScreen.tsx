@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Text, Button, TextInput, ActivityIndicator, HelperText } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
+import SafeAreaView from '../../components/CustomSafeAreaView';
+
 
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -22,11 +24,9 @@ const LoginScreen = () => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       setFormError('');
-      // authError from context is no longer cleared here.
-      // It's cleared before a new login attempt in handleLogin.
     });
     return unsubscribe;
-  }, [navigation]); // Dependencies updated
+  }, [navigation]);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -51,77 +51,75 @@ const LoginScreen = () => {
   const displayError = authError || formError;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-        <Text variant="headlineMedium" style={styles.title}>Login</Text>
+      <SafeAreaView style={styles.safeArea}>
+          <View style={styles.container}>
+          <Text variant="headlineMedium" style={styles.title}>Login</Text>
 
-         <TextInput
-             label="LPU Email"
-             value={email}
-             onChangeText={setEmail}
-             style={styles.input}
-             mode="outlined"
-             disabled={isSubmitting || authIsLoading} // Use authIsLoading from context
-             activeOutlineColor={customFocusedColor}
-             keyboardType="email-address"
-             autoCapitalize="none"
-         />
-         <TextInput
-             label="Password"
-             value={password}
-             onChangeText={setPassword}
-             secureTextEntry={!showPassword}
-             style={styles.input}
-             mode="outlined"
-             disabled={isSubmitting || authIsLoading} // Use authIsLoading from context
-             activeOutlineColor={customFocusedColor}
-             right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={toggleShowPassword} />}
-         />
+          <TextInput
+              label="LPU Email"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+              mode="outlined"
+              disabled={isSubmitting || authIsLoading}
+              activeOutlineColor={customFocusedColor}
+              keyboardType="email-address"
+              autoCapitalize="none"
+          />
+          <TextInput
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              style={styles.input}
+              mode="outlined"
+              disabled={isSubmitting || authIsLoading}
+              activeOutlineColor={customFocusedColor}
+              right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={toggleShowPassword} />}
+          />
 
-        <View style={styles.forgotPasswordContainer}>
-          <Button
-            mode="text"
-            onPress={() => navigation.navigate('ForgotPassword')}
-            compact
-            disabled={isSubmitting || authIsLoading}
-            labelStyle={styles.forgotPasswordLabel}
-          >
-            Forgot Password?
-          </Button>
-        </View>
-
-        {/* Display error message: authError from context or local formError */}
-        {displayError ? (
-            <HelperText type="error" visible={!!displayError} style={styles.errorText}>
-              {displayError}
-            </HelperText>
-        ) : null}
-
-        {/* Show ActivityIndicator if AuthContext is loading */}
-        {(authIsLoading) ? ( // Primarily rely on authIsLoading from context
-            <ActivityIndicator animating={true} color="#800000" style={styles.buttonActivity} />
-        ) : (
+          <View style={styles.forgotPasswordContainer}>
             <Button
-            mode="contained"
-            onPress={handleLogin}
-            style={styles.button}
-            buttonColor="#800000"
-            disabled={isSubmitting} // Can also add authIsLoading here if needed
+              mode="text"
+              onPress={() => navigation.navigate('ForgotPassword')}
+              compact
+              disabled={isSubmitting || authIsLoading}
+              labelStyle={styles.forgotPasswordLabel}
             >
-            Login
+              Forgot Password?
             </Button>
-        )}
-        <Button
-            mode="text"
-            onPress={() => navigation.navigate('Register')}
-            style={styles.registerLink}
-            textColor="#800000"
-            disabled={isSubmitting || authIsLoading}
-        >
-            Don't have an account? Sign Up
-        </Button>
-        </View>
-    </SafeAreaView>
+          </View>
+
+          {displayError ? (
+              <HelperText type="error" visible={!!displayError} style={styles.errorText}>
+                {displayError}
+              </HelperText>
+          ) : null}
+
+          {(authIsLoading) ? ( 
+              <ActivityIndicator animating={true} color="#800000" style={styles.buttonActivity} />
+          ) : (
+              <Button
+              mode="contained"
+              onPress={handleLogin}
+              style={styles.button}
+              buttonColor="#800000"
+              disabled={isSubmitting} 
+              >
+              Login
+              </Button>
+          )}
+          <Button
+              mode="text"
+              onPress={() => navigation.navigate('Register')}
+              style={styles.registerLink}
+              textColor="#800000"
+              disabled={isSubmitting || authIsLoading}
+          >
+              Don't have an account? Sign Up
+          </Button>
+          </View>
+      </SafeAreaView>
   );
 };
 
@@ -139,15 +137,14 @@ const styles = StyleSheet.create({
      fontSize: 14,
      color: '#800000',
   },
-  errorText: { // Make sure this style is visible
+  errorText: { 
      marginBottom: 10,
      textAlign: 'center',
      width: '100%',
-     // color: 'red', // HelperText type="error" should handle this
      fontSize: 14,
   },
   button: { width: '100%', paddingVertical: 8, marginTop: 5, borderRadius: 8 },
-  buttonActivity: { width: '100%', paddingVertical: 20, marginTop: 5 }, // Ensure this has enough height
+  buttonActivity: { width: '100%', paddingVertical: 20, marginTop: 5 },
   registerLink: { marginTop: 15 }
 });
 

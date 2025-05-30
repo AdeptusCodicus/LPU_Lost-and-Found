@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { Text, Button, TextInput, ActivityIndicator, HelperText } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import apiClient from '../../services/api';
-import { AuthStackParamList } from '../../navigation/AuthNavigator'; // Adjust if your param list is different
+import { AuthStackParamList } from '../../navigation/AuthNavigator';
+import SafeAreaView from '../../components/CustomSafeAreaView';
 
-// Define the route params for this screen
 type ResetPasswordScreenRouteProp = RouteProp<AuthStackParamList, 'ResetPassword'>;
-// Define navigation prop for this screen
 type ResetPasswordScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'ResetPassword'>;
 
 
@@ -17,8 +16,8 @@ const ResetPasswordScreen = () => {
   const route = useRoute<ResetPasswordScreenRouteProp>();
 
   const [token, setToken] = useState('');
-  const [email, setEmail] = useState(''); // <-- Add state for email
-  const [password, setPassword] = useState(''); // This is the newPassword
+  const [email, setEmail] = useState(''); 
+  const [password, setPassword] = useState(''); 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,10 +28,9 @@ const ResetPasswordScreen = () => {
   const customFocusedColor = '#800000';
 
   useEffect(() => {
-    // Extract token and email from route params
     if (route.params?.token && route.params?.email) {
       setToken(route.params.token);
-      setEmail(route.params.email); // <-- Set email from route params
+      setEmail(route.params.email); 
       console.log(`ResetPasswordScreen: Token: ${route.params.token}, Email: ${route.params.email}`);
     } else {
       setError('Invalid or missing reset link parameters. Please request a new reset link.');
@@ -41,7 +39,7 @@ const ResetPasswordScreen = () => {
   }, [route.params?.token, route.params?.email]);
 
   const handleResetPassword = async () => {
-    if (!token || !email) { // <-- Check for email as well
+    if (!token || !email) { 
       setError('Reset link parameters are missing. Please use the link from your email.');
       return;
     }
@@ -63,13 +61,12 @@ const ResetPasswordScreen = () => {
     setIsLoading(true);
 
     try {
-      // Construct the URL with token and email as query parameters
       const resetUrl = `/auth/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
       console.log('Attempting to reset password with URL:', resetUrl);
 
       await apiClient.post(
-        resetUrl, // URL with query params
-        { newPassword: password } // Body of the POST request
+        resetUrl, 
+        { newPassword: password } 
       );
 
       setSuccessMessage('Your password has been reset successfully! You can now log in.');
@@ -97,7 +94,6 @@ const ResetPasswordScreen = () => {
           Enter your new password below.
         </Text>
 
-        {/* Displaying the email for confirmation, usually non-editable */}
         {email && <Text style={styles.emailDisplay}>Resetting password for: {email}</Text>}
 
         <TextInput
@@ -135,7 +131,7 @@ const ResetPasswordScreen = () => {
               onPress={handleResetPassword}
               style={styles.button}
               buttonColor={customFocusedColor}
-              disabled={!token || !email} // Disable if token or email is missing
+              disabled={!token || !email}
             >
               Reset Password
             </Button>
@@ -161,7 +157,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   title: { marginBottom: 10, color: '#333' },
   subtitle: { marginBottom: 15, textAlign: 'center', color: '#555' },
-  emailDisplay: { marginBottom: 15, fontSize: 14, color: '#333' }, // Style for displaying email
+  emailDisplay: { marginBottom: 15, fontSize: 14, color: '#333' }, 
   input: { width: '100%', marginBottom: 15 },
   button: { width: '100%', paddingVertical: 8, marginTop: 10, borderRadius: 8 },
   buttonActivity: { width: '100%', paddingVertical: 20, marginTop: 10 },

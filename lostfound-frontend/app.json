@@ -1,32 +1,42 @@
 {
   "expo": {
-    "name": "lostfound-frontend",
-    "slug": "lostfound-frontend",
-    "version": "1.0.0",
+    "name": "LPU Lost & Found",
+    "slug": "lpu-laf",
+    "version": "0.9.0-beta.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F9F7F5"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "works.valdoria-software.lpulaf"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#F9F7F5"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": false,
+      "package": "works.valdoria_software.lpulaf"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "714bd5ae-0a4a-4a12-b8b6-0d0d91b507e2"
+      }
+    }
   }
 }

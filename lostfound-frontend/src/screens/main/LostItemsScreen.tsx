@@ -1,22 +1,27 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, TouchableOpacity, ScrollView } from 'react-native';
-import { Text, Card, ActivityIndicator, Modal, Portal, Button, Divider } from 'react-native-paper';
+import { Text, Card, ActivityIndicator, Modal, Portal, Button, Divider, Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import apiClient from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#800000',
+    accent: '#800000',
+  },
+};
 interface LostItem {
   id: number | string;
   name: string;
   description: string;
-  location: string; // Last seen location
+  location: string; 
   contact?: string;
-  owner?: string; // Email of the owner
+  owner?: string; 
   date_lost: string;
   status: string;
-  // Add any other fields that might come from the backend
-  user_id?: number;
-  image_url?: string;
 }
 
 interface LostItemsScreenProps {
@@ -30,7 +35,6 @@ const LostItemsScreen: React.FC<LostItemsScreenProps> = ({ searchQuery }) => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // State for Modal
   const [selectedItem, setSelectedItem] = useState<LostItem | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -88,15 +92,17 @@ const LostItemsScreen: React.FC<LostItemsScreenProps> = ({ searchQuery }) => {
   }, [allItems, searchQuery]);
 
   const renderItem = ({ item }: { item: LostItem }) => (
-    <TouchableOpacity onPress={() => showModal(item)}>
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
-          <Text variant="bodySmall" style={styles.cardSubtitle}>Last Seen: {item.location}</Text>
-          <Text variant="bodySmall" style={styles.cardSubtitle}>Date Lost: {new Date(item.date_lost).toLocaleDateString()}</Text>
-        </Card.Content>
-      </Card>
-    </TouchableOpacity>
+    <PaperProvider theme={theme}>
+      <TouchableOpacity onPress={() => showModal(item)}>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+            <Text variant="bodySmall" style={styles.cardSubtitle}>Last Seen: {item.location}</Text>
+            <Text variant="bodySmall" style={styles.cardSubtitle}>Date Lost: {new Date(item.date_lost).toLocaleDateString()}</Text>
+          </Card.Content>
+        </Card>
+      </TouchableOpacity>
+    </PaperProvider>  
   );
 
   if (isLoading && !refreshing && allItems.length === 0) {
@@ -118,7 +124,7 @@ const LostItemsScreen: React.FC<LostItemsScreenProps> = ({ searchQuery }) => {
   }
 
   return (
-    <>
+    <PaperProvider theme={theme}>
       <FlatList
         data={filteredItems}
         renderItem={renderItem}
@@ -157,7 +163,7 @@ const LostItemsScreen: React.FC<LostItemsScreenProps> = ({ searchQuery }) => {
                 </View>
               )}
 
-              {selectedItem.owner && ( // Assuming owner label is maroon, value is black
+              {selectedItem.owner && ( 
                 <View style={styles.modalRow}>
                   <Text style={styles.modalLabel}>Reported by:</Text>
                   <Text style={styles.modalValue}>{selectedItem.owner}</Text>
@@ -180,7 +186,7 @@ const LostItemsScreen: React.FC<LostItemsScreenProps> = ({ searchQuery }) => {
           )}
         </Modal>
       </Portal>
-    </>
+    </PaperProvider>
   );
 };
 
@@ -190,7 +196,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#f5f5f5',
   },
-  container: { // General container for error/empty states
+  container: { 
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -225,7 +231,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'red',
   },
-  // Modal Styles
   modalContainer: {
     backgroundColor: 'white',
     padding: 20,
@@ -277,7 +282,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     color: 'green',
-    fontWeight: 'bold', // Optional: make it bold
+    fontWeight: 'bold', 
   },
   divider: {
     marginVertical: 10,

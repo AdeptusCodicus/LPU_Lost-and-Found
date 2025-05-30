@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { drizzle } from "drizzle-orm/libsql";
 import { users, foundItems, lostItems, reportedItems } from "./db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc, desc } from "drizzle-orm";
 import { createClient } from "@libsql/client";
 import fastifyWebsocket from "@fastify/websocket";
 import crypto from "crypto";
@@ -13,6 +13,14 @@ import { sendVerificationEmail } from "./emailService.js";
 import { sendPasswordChangedNotification } from "./emailService.js";
 import { sendPasswordResetEmail } from "./emailService.js";
 import { sendPasswordChangeConfirmationEmail } from "./emailService.js";
+
+function generateOtp(length = 6) {
+  let otp = '';
+  for (let i = 0; i < length; i++) {
+    otp += Math.floor(Math.random() * 10).toString();
+  }
+  return otp;
+}
 
 dotenv.config();
 
@@ -50,7 +58,7 @@ function broadcastToAdmins(data) {
   const message = JSON.stringify(data);
   console.log("Broadcasting message to ADMINS:", message);
   for (const conn of connections){
-    if (conn.userData && conn.userData.email && conn.userData.email.endsWith("@lpuadmin.edu.ph" || "@gmail.com")) { //remove gmail in prod
+    if (conn.userData && conn.userData.email && conn.userData.email.endsWith("@lpuadmin.edu.ph" || "somedudein@gmail.com")) { //remove gmail in prod
       try {
         if (conn.readyState === 1){
           conn.send(message);
@@ -134,7 +142,7 @@ function verifyAdmin(req, reply, done) {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return reply.status(401).send({ error: "No token provided" });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded.email.endsWith("@lpuadmin.edu.ph" && "@gmail.com")) { //remove gmail in prod
+    if (!decoded.email.endsWith("@lpuadmin.edu.ph" || "somedudein@gmail.com")) { //remove gmail in prod
       return reply.status(403).send({ error: "Admin access only" });
     }
     req.user = decoded;
@@ -150,8 +158,8 @@ function verifyUser(req, reply, done) {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return reply.status(401).send({ error: "No token provided" });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded.email.endsWith("@lpunetwork.edu.ph")) {
-      return reply.status(403).send({ error: "User access only" });
+    if (!decoded.email.endsWith("@lpunetwork.edu.ph" || "@gmail.com")) { //Remove gmail in prod
+      return reply.status(403).send({ error: "User access only" }); 
     }
     req.user = decoded;
     done();
@@ -190,19 +198,19 @@ fastify.post("/auth/register", async (req, reply) => {
   }
   
   try {
-    const hashed = await bcrypt.hash(password, 10);
+    const hashedUserPassword = await bcrypt.hash(password, 10);
 
-    const plainVerificationToken = crypto.randomBytes(32).toString("hex");
-    const hashedVerificationToken = crypto.createHash('sha256').update(plainVerificationToken).digest('hex');
-    const verificationExpires = new Date(Date.now() + 3600000);
+    const plainOtp = generateOtp(); 
+    const hashedOtp = crypto.createHash('sha256').update(plainOtp).digest('hex'); 
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     const newUser = await db.insert(users).values({ 
       username,
       email, 
-      password: hashed,
+      password: hashedUserPassword,
       isVerified: false,
-      verificationToken: hashedVerificationToken,
-      verificationExpires: verificationExpires 
+      verificationOtp: hashedOtp,                 
+      verificationOtpExpiresAt: otpExpires      
     }).returning().get();
 
     if (!newUser) {
@@ -210,52 +218,62 @@ fastify.post("/auth/register", async (req, reply) => {
       return reply.status(500).send({ error: "Registration failed due to a server error." });
     }
 
-    const emailResult = await sendVerificationEmail(newUser.email, plainVerificationToken);
+    const emailResult = await sendVerificationEmail(newUser.email, plainOtp); 
 
     if (!emailResult.success) {
-      fastify.log.error(`Failed to send verification email to ${newUser.email}`, emailResult.errorDetail);
+      fastify.log.error(`Failed to send verification OTP email to ${newUser.email}`, emailResult.errorDetail);
     }
 
-    reply.send({ message: "Registered successfully. Please check your email to verify your account.", userId: newUser.id });
+    reply.send({ message: "Registered successfully. Please check your email for the OTP to verify your account.", userId: newUser.id });
   } catch (dbError) {
     fastify.log.error({ error: dbError, email }, "Database error during user registration.");
     reply.status(500).send({ error: "Registration failed due to a database error." });
   }
 });
 
-fastify.get("/auth/verify-email", async (req, reply) => {
-  const { token } = req.query;
+fastify.post("/auth/verify-email", async (req, reply) => { 
+  const { email, otp } = req.body;
 
-  if (!token) {
-    return reply.status(400).send({ error: "Verification token is missing." });
+  if (!email || !otp) {
+    return reply.status(400).send({ error: "Email and OTP are required." });
   }
 
   try{
-    const hashedTokenToCompare = crypto.createHash('sha256').update(token).digest('hex');
+    const hashedOtpToCompare = crypto.createHash('sha256').update(otp).digest('hex');
 
-    const user = await db.select().from(users).where(eq(users.verificationToken, hashedTokenToCompare)).get();
+    const user = await db.select().from(users).where(eq(users.email, email)).get(); 
 
     if (!user) {
-      return reply.status(400).send({ error: "Invalid or expired verification token. Please try registering again or contact support." });
+      return reply.status(400).send({ error: "Invalid email or OTP. Please try again or contact support." });
     }
 
     if (user.isVerified) {
       return reply.status(200).send({ message: "Account already verified. You can log in." });
     }
 
-    if (user.verificationExpires === null || new Date() > new Date(user.verificationExpires)) {
-      return reply.status(400).send({ error: "Verification token has expired. Please try registering again." });
+    if (!user.verificationOtp || user.verificationOtp !== hashedOtpToCompare) {
+        return reply.status(400).send({ error: "Invalid OTP." });
+    }
+
+    if (user.verificationOtpExpiresAt === null || new Date() > new Date(user.verificationOtpExpiresAt)) {
+      await db.update(users).set({
+        verificationOtp: null,
+        verificationOtpExpiresAt: null
+      }).where(eq(users.id, user.id)).run();
+      return reply.status(400).send({ error: "OTP has expired. Please request a new one or try registering again." });
     }
 
     await db.update(users).set({
       isVerified: true,
-      verificationToken: null,
+      verificationOtp: null, 
+      verificationOtpExpiresAt: null,
+      verificationToken: null, 
       verificationExpires: null
     }).where(eq(users.id, user.id)).run();
 
     reply.send({ message: "Email verified successfully! You can now log in." });
   } catch (error) {
-    fastify.log.error(error, "Error during mail verification.");
+    fastify.log.error(error, "Error during OTP email verification.");
     reply.status(500).send({ error: "Internal server error during email verification." });
   }
 });
@@ -276,7 +294,7 @@ fastify.post("/auth/login", async (req, reply) => {
   reply.send({ token, user });
 });
 
-fastify.post("/auth/change-password", { preHandler: verifyMultiple }, async (req, reply) => { //implement email verification
+fastify.post("/auth/change-password", { preHandler: verifyMultiple }, async (req, reply) => { 
   const { currentPassword, newPassword } = req.body;
   const userId= req.user.id;
   const userEmail = req.user.email;
@@ -303,25 +321,25 @@ fastify.post("/auth/change-password", { preHandler: verifyMultiple }, async (req
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    const plainChangeToken = crypto.randomBytes(32).toString("hex");
-    const hashedChangeToken = crypto.createHash('sha256').update(plainChangeToken).digest('hex');
-    const changeExpires = new Date(Date.now() + 3600000);
+    const plainOtp = generateOtp();
+    const hashedOtp = crypto.createHash('sha256').update(plainOtp).digest('hex');
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     await db.update(users)
       .set({ 
-        pendingPasswordChangeToken: hashedChangeToken,
-        pendingPasswordChangeExpires: changeExpires,
+        pendingPasswordChangeOtp: hashedOtp,        
+        pendingPasswordChangeOtpExpiresAt: otpExpires, 
         pendingNewPasswordHash: hashedNewPassword
       })
       .where(eq(users.id, userId)).run();
     
-    const emailResult = await sendPasswordChangeConfirmationEmail(userEmail, plainChangeToken);
+    const emailResult = await sendPasswordChangeConfirmationEmail(userEmail, plainOtp);
 
     if (!emailResult.success){
-      fastify.log.error(`Failed to send password change confirmation email to ${userEmail}`, emailResult.errorDetail);
+      fastify.log.error(`Failed to send password change confirmation OTP to ${userEmail}`, emailResult.errorDetail);
     }
 
-    reply.send({ message: "Password change initiated. Please check your email to confirm the change." });
+    reply.send({ message: "Password change initiated. Please check your email for the OTP to confirm the change." });
   } catch (error) {
     fastify.log.error(error, `Error initiating password change for user ID ${userId}`);
     reply.status(500).send({ error: "Internal server error while initiating password change." });
@@ -329,42 +347,46 @@ fastify.post("/auth/change-password", { preHandler: verifyMultiple }, async (req
 });
 
 fastify.post("/auth/confirm-password-change", async (req, reply) => {
-  const { token, email } = req.query;
+  const { email, otp } = req.body;
 
-  if (!token || !email ) {
-    return reply.status(400).send({ error: "Confirmation token and email are required." });
+  if (!otp || !email ) {
+    return reply.status(400).send({ error: "Confirmation OTP and email are required." });
   }
 
   try {
-    const hashedTokenToCompare = crypto.createHash('sha256').update(token).digest('hex');
+    const hashedOtpToCompare = crypto.createHash('sha256').update(otp).digest('hex');
 
     const user = await db.select()
       .from(users)
       .where(and(
         eq(users.email, email),
-        eq(users.pendingPasswordChangeToken, hashedTokenToCompare)
+        eq(users.pendingPasswordChangeOtp, hashedOtpToCompare)
       ))
       .get();
 
     if (!user) {
-      return reply.status(400).send({ error: "Invalid or expired password change token. Please try again." });
+      return reply.status(400).send({ error: "Invalid or expired password change OTP. Please try again." });
     }
 
-    if (user.pendingPasswordChangeExpires == null || new Date() > new Date(user.pendingPasswordChangeExpires)) {
+    if (user.pendingPasswordChangeOtpExpiresAt == null || new Date() > new Date(user.pendingPasswordChangeOtpExpiresAt)) {
       await db.update(users).set({
+        pendingPasswordChangeOtp: null,
+        pendingPasswordChangeOtpExpiresAt: null,
+        pendingNewPasswordHash: null,
         pendingPasswordChangeToken: null,
-        pendingPasswordChangeExpires: null,
-        pendingNewPasswordHash: null
+        pendingPasswordChangeExpires: null
       }).where(eq(users.id, user.id)).run();
-      return reply.status(400).send({ error: "Password change token has expired. Please initiate the password change again." });
+      return reply.status(400).send({ error: "Password change OTP has expired. Please initiate the password change again." });
     }
 
     if (!user.pendingNewPasswordHash) {
-        fastify.log.error(`User ID ${user.id} confirmed password change token, but no pendingNewPasswordHash found.`);
+        fastify.log.error(`User ID ${user.id} confirmed password change OTP, but no pendingNewPasswordHash found.`);
         await db.update(users).set({
+            pendingPasswordChangeOtp: null,
+            pendingPasswordChangeOtpExpiresAt: null,
+            pendingNewPasswordHash: null,
             pendingPasswordChangeToken: null,
-            pendingPasswordChangeExpires: null,
-            pendingNewPasswordHash: null
+            pendingPasswordChangeExpires: null
         }).where(eq(users.id, user.id)).run();
         return reply.status(500).send({ error: "Could not finalize password change. Please try again." });
     }
@@ -372,9 +394,11 @@ fastify.post("/auth/confirm-password-change", async (req, reply) => {
     await db.update(users)
       .set({
         password: user.pendingNewPasswordHash,
+        pendingPasswordChangeOtp: null,
+        pendingPasswordChangeOtpExpiresAt: null,
+        pendingNewPasswordHash: null,
         pendingPasswordChangeToken: null,
-        pendingPasswordChangeExpires: null,
-        pendingNewPasswordHash: null
+        pendingPasswordChangeExpires: null
       })
       .where(eq(users.id, user.id))
       .run();
@@ -384,7 +408,7 @@ fastify.post("/auth/confirm-password-change", async (req, reply) => {
     reply.send({ message: "Password has been changed successfully. You can now use your new password." });
 
   } catch (error) {
-    fastify.log.error(error, "Error confirming password change.");
+    fastify.log.error(error, "Error confirming password change with OTP.");
     reply.status(500).send({ error: "Internal server error while confirming password change." });
   }
 });
@@ -398,62 +422,64 @@ fastify.post("/auth/forgot-password", async (req, reply) => {
   try {
     const user = await db.select().from(users).where(eq(users.email, email)).get();
 
-    const genericMessage = "If an account with that email exists and is verified, a password reset link has been sent.";
+    const genericMessage = "If an account with that email exists and is verified, a password reset OTP has been sent."; // Updated message
     if (!user || !user.isVerified) {
       fastify.log.info(`Password reset requested for non-existent or unverified email: ${email}`);
       return reply.send({ message: genericMessage });
     }
 
-    const plainResetToken = crypto.randomBytes(32).toString("hex");
-    const hashedResetToken = crypto.createHash('sha256').update(plainResetToken).digest('hex');
-    const passwordResetExpires = new Date(Date.now() + 3600000);
+    const plainOtp = generateOtp();
+    const hashedOtp = crypto.createHash('sha256').update(plainOtp).digest('hex'); 
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); 
 
     await db.update(users)
       .set({
-        passwordResetToken: hashedResetToken,
-        passwordResetExpires: passwordResetExpires,
+        passwordResetOtp: hashedOtp,              
+        passwordResetOtpExpiresAt: otpExpires  
       })
       .where(eq(users.id, user.id)).run();
     
-      const emailResult = await sendPasswordResetEmail(user.email, plainResetToken);
+      const emailResult = await sendPasswordResetEmail(user.email, plainOtp);
 
       if(!emailResult.success) {
-        fastify.log.error(`Failed to send email to ${user.email}`, emailResult.errorDetail);
+        fastify.log.error(`Failed to send password reset OTP to ${user.email}`, emailResult.errorDetail);
       }
 
       reply.send({ message: genericMessage });
   } catch (error) {
     fastify.log.error(error, `Error in forgot-password for email: ${email}`);
-    reply.send({ message: "If an account with that email exists and is verified, a password reset link has been sent."});
+    reply.send({ message: "If an account with that email exists and is verified, a password reset OTP has been sent."});
   }
 });
 
 fastify.post("/auth/reset-password", async (req, reply) => {
-  const { token, email } = req.query;
+  const { email, otp } = req.body; 
   const { newPassword } = req.body;
 
-  if (!token || !email || !newPassword) {
-    return reply.status(400).send({ error: "Token, email, and new password are required." });
+  if (!otp || !email || !newPassword) {
+    return reply.status(400).send({ error: "OTP, email, and new password are required." });
   }
   if (newPassword.length < 6) {
     return reply.status(400).send({ error: "New password must be at least 6 characters long." });
   }
 
   try {
-    const hashedTokenToCompare = crypto.createHash('sha256').update(token).digest('hex');
+    const hashedOtpToCompare = crypto.createHash('sha256').update(otp).digest('hex');
 
-    const user = await db.select().from(users).where(and(eq(users.email, email), eq(users.passwordResetToken, hashedTokenToCompare))).get();
+    const user = await db.select().from(users).where(and(eq(users.email, email), eq(users.passwordResetOtp, hashedOtpToCompare))).get(); // Check against OTP field
 
     if (!user) {
-      return reply.status(400).send({ error: "Invalid or expired password reset token (details mismatch)." });
+      return reply.status(400).send({ error: "Invalid or expired password reset OTP." });
     }
     
-    if (user.passwordResetExpires == null || new Date() > new Date(user.passwordResetExpires)) {
+    if (user.passwordResetOtpExpiresAt == null || new Date() > new Date(user.passwordResetOtpExpiresAt)) {
       await db.update(users).set({
+        passwordResetOtp: null,
+        passwordResetOtpExpiresAt: null,
         passwordResetToken: null,
         passwordResetExpires: null
       }).where(eq(users.id, user.id)).run();
-      return reply.status(400).send({ error: "Password reset token has expired. Please request a new one."});
+      return reply.status(400).send({ error: "Password reset OTP has expired. Please request a new one."});
     }
 
     const isSameAsOldPassword = await bcrypt.compare(newPassword, user.password);
@@ -466,14 +492,147 @@ fastify.post("/auth/reset-password", async (req, reply) => {
     await db.update(users)
       .set({
         password: hashedNewPassword,
+        passwordResetOtp: null,
+        passwordResetOtpExpiresAt: null,
         passwordResetToken: null,
-        passwordResetExpires: null,
+        passwordResetExpires: null
       }).where(eq(users.id, user.id)).run();
     await sendPasswordChangedNotification(user.email);
     reply.send({ message: "Password has been reset successfully. You can now login with your new password." });
   } catch (error) {
-    fastify.log.error(error, " Error resetting password.");
+    fastify.log.error(error, " Error resetting password with OTP.");
     reply.status(500).send({ error: "Internal server error while resetting password." });
+  }
+});
+
+fastify.post("/auth/change-username", { preHandler: [verifyMultiple] }, async (req, reply) => {
+  const { newUsername } = req.body;
+  const userId = req.user.id;
+  const userEmail = req.user.email; 
+
+  if (!newUsername || newUsername.trim() === "") {
+    return reply.status(400).send({ error: "New username cannot be empty." });
+  }
+
+  if (newUsername.length < 3) {
+    return reply.status(400).send({ error: "New username must be at least 3 characters long." });
+  }
+
+  try {
+    const updatedUser = await db.update(users)
+      .set({ username: newUsername })
+      .where(eq(users.id, userId))
+      .returning({ id: users.id, username: users.username, email: users.email }) 
+      .get();
+
+    if (!updatedUser) {
+      fastify.log.error(`Failed to update username for user ID ${userId} to ${newUsername}`);
+      return reply.status(500).send({ error: "Failed to update username. Please try again." });
+    }
+
+    fastify.log.info(`User ${userEmail} (ID: ${userId}) successfully changed username to ${newUsername}`);
+
+    reply.send({ message: "Username changed successfully.", user: { id: updatedUser.id, username: updatedUser.username, email: updatedUser.email } });
+
+  } catch (error) {
+    fastify.log.error(error, `Error changing username for user ID ${userId}`);
+    reply.status(500).send({ error: "Internal server error while changing username." });
+  }
+});
+
+fastify.post("/auth/resend-otp", async (req, reply) => {
+  const { email, purpose } = req.body;
+
+  if (!email || !purpose) {
+    return reply.status(400).send({ error: "Email and purpose (e.g., 'verification', 'passwordReset', 'passwordChangeConfirmation') are required." });
+  }
+
+  if (purpose !== "verification" && purpose !== "passwordReset" && purpose !== "passwordChangeConfirmation") {
+    return reply.status(400).send({ error: "Invalid purpose. Must be 'verification', 'passwordReset', or 'passwordChangeConfirmation'." });
+  }
+
+  try {
+    const user = await db.select().from(users).where(eq(users.email, email)).get();
+
+    if (!user) {
+      if (purpose === "passwordReset" || purpose === "passwordChangeConfirmation") {
+        fastify.log.info(`OTP resend (${purpose}) requested for non-existent email: ${email}`);
+        return reply.send({ message: "If your email is registered and meets the criteria, an OTP will be sent." });
+      }
+      return reply.status(404).send({ error: "User not found." });
+    }
+
+    const plainOtp = generateOtp();
+    const hashedOtp = crypto.createHash('sha256').update(plainOtp).digest('hex');
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+
+    let emailResult;
+
+    if (purpose === "verification") {
+      if (user.isVerified) {
+        return reply.status(400).send({ message: "Account is already verified." });
+      }
+      await db.update(users)
+        .set({
+          verificationOtp: hashedOtp,
+          verificationOtpExpiresAt: otpExpires,
+        })
+        .where(eq(users.id, user.id))
+        .run();
+      
+      emailResult = await sendVerificationEmail(user.email, plainOtp);
+      if (!emailResult.success) {
+        fastify.log.error(`Failed to resend verification OTP to ${user.email}`, emailResult.errorDetail);
+      }
+      fastify.log.info(`Verification OTP resent attempt to ${user.email}`);
+      return reply.send({ message: "Verification OTP resent. Please check your email." });
+
+    } else if (purpose === "passwordReset") {
+      if (!user.isVerified) {
+         fastify.log.info(`Password reset OTP resend requested for unverified email: ${email}`);
+         return reply.send({ message: "If your email is registered and meets the criteria, an OTP will be sent." });
+      }
+      await db.update(users)
+        .set({
+          passwordResetOtp: hashedOtp,
+          passwordResetOtpExpiresAt: otpExpires,
+        })
+        .where(eq(users.id, user.id))
+        .run();
+
+      emailResult = await sendPasswordResetEmail(user.email, plainOtp);
+      if (!emailResult.success) {
+        fastify.log.error(`Failed to resend password reset OTP to ${user.email}`, emailResult.errorDetail);
+      }
+      fastify.log.info(`Password reset OTP resent attempt to ${user.email}`);
+      return reply.send({ message: "If your email is registered and meets the criteria, an OTP will be sent." });
+
+    } else if (purpose === "passwordChangeConfirmation") {
+      if (!user.pendingNewPasswordHash || !user.pendingPasswordChangeOtpExpiresAt) {
+        fastify.log.info(`Password change confirmation OTP resend requested for ${email}, but no pending change found.`);
+        return reply.status(400).send({ error: "No pending password change found to resend OTP for. Please initiate the password change again." });
+      }
+      await db.update(users)
+        .set({
+          pendingPasswordChangeOtp: hashedOtp,
+          pendingPasswordChangeOtpExpiresAt: otpExpires,
+        })
+        .where(eq(users.id, user.id))
+        .run();
+      
+      emailResult = await sendPasswordChangeConfirmationEmail(user.email, plainOtp);
+      if (!emailResult.success) {
+        fastify.log.error(`Failed to resend password change confirmation OTP to ${user.email}`, emailResult.errorDetail);
+      }
+      fastify.log.info(`Password change confirmation OTP resent attempt to ${user.email}`);
+      return reply.send({ message: "Password change confirmation OTP resent. Please check your email." });
+    }
+    
+    return reply.status(500).send({ error: "An unexpected error occurred processing the OTP purpose."});
+
+  } catch (error) {
+    fastify.log.error(error, `Error resending OTP for email ${email} and purpose ${purpose}`);
+    return reply.status(500).send({ error: "An internal server error occurred while attempting to resend the OTP." });
   }
 });
 
@@ -750,12 +909,12 @@ fastify.post("/admin/lost-items/:id/mark-found", { preHandler: verifyAdmin }, as
 });
 
 fastify.get("/found-items", { preHandler: verifyMultiple }, async (req, reply) => {
-  const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).all();
+  const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).orderBy(desc(foundItems.id)).all();
   reply.send({ items });
 });
 
 fastify.get("/lost-items", { preHandler: verifyMultiple }, async (req, reply) => {
-  const items = await db.select().from(lostItems).where(eq(lostItems.status, "missing")).all();
+  const items = await db.select().from(lostItems).where(eq(lostItems.status, "missing")).orderBy(desc(lostItems.id)).all();
   reply.send({ items });
 });
 

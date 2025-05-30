@@ -40,11 +40,11 @@ export const users = sqliteTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   isVerified: integer("is_verified", { mode: "boolean" }).$default(false).notNull(),
-  verificationToken: text("verification_token"),
-  verificationExpires: integer("verification_expires", { mode: `timestamp_ms` }),
-  passwordResetToken: text("password_reset_token"),
-  passwordResetExpires: integer("password_reset_expires", { mode: `timestamp_ms` }),
-  pendingPasswordChangeToken: text("pending_password_change_token"),
-  pendingPasswordChangeExpires: integer("pending_password_change_expires", { mode: 'timestamp_ms' }),
+  verificationOtp: text("verification_otp"),
+  verificationOtpExpiresAt: integer("verification_otp_expires_at", { mode: 'timestamp_ms' }),
+  passwordResetOtp: text("password_reset_otp"),
+  passwordResetOtpExpiresAt: integer("password_reset_otp_expires_at", { mode: 'timestamp_ms' }),
+  pendingPasswordChangeOtp: text("pending_password_change_otp"),
+  pendingPasswordChangeOtpExpiresAt: integer("pending_password_change_otp_expires_at", { mode: 'timestamp_ms' }),
   pendingNewPasswordHash: text("pending_new_password_hash")
 });

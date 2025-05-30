@@ -19,6 +19,7 @@ interface AuthContextType {
     authError: string | null;
     login: (email: string, pass: string) => Promise<void>;
     logout: () => Promise<void>;
+    updateUserContext: (updatedUser: User) => void;
     clearAuthError: () => void;
 }
 
@@ -67,7 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (emailInput: string, passwordInput: string) => {
     setIsLoading(true);
-    setAuthError(null); // <-- Clear previous auth error on new login attempt
+    setAuthError(null);
     console.log('AuthContext: Attempting login...');
     try {
       const response = await apiClient.post<AuthResponseData>('/auth/login', {
@@ -83,7 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await SecureStore.deleteItemAsync('userToken');
         await SecureStore.deleteItemAsync('userSession');
         setUser(null);
-        return; // Exit if critical data is missing
+        return;
       }
       if (!loggedInUser || typeof loggedInUser !== 'object') {
         console.error('AuthContext: Invalid or missing user object received.');
@@ -107,11 +108,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         errorMessage = error.message;
       }
       console.error("AuthContext: Login API failed.", errorMessage, error.response?.data || error);
-      setAuthError(errorMessage); // <-- Set authError instead of throwing
+      setAuthError(errorMessage);
       await SecureStore.deleteItemAsync('userToken');
       await SecureStore.deleteItemAsync('userSession');
       setUser(null);
-      // Do NOT throw error here anymore, LoginScreen will read authError
     } finally {
       setIsLoading(false);
       console.log('AuthContext: Login attempt finished, isLoading set to false.');
@@ -120,15 +120,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     setIsLoading(true);
-    setAuthError(null); // Clear any auth error on logout
+    setAuthError(null); 
     try {
       console.log("AuthContext: Logging out user...");
-      // Optional: Call API to invalidate token on server
-      // await apiClient.post('/auth/logout');
     } catch (apiError) {
       console.error("AuthContext: API logout failed (continuing with local logout):", apiError);
-      // You might want to set an authError here if API logout is critical
-      // setAuthError("Logout failed to complete on server.");
     } finally {
       try {
         await SecureStore.deleteItemAsync('userToken');
@@ -137,8 +133,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log("AuthContext: User session cleared from storage.");
       } catch (storageError) {
         console.error("AuthContext: Failed to clear user session from storage during logout", storageError);
-        // Potentially set an error here if local cleanup fails critically
-        // setAuthError("Failed to clear local session during logout.");
       } finally {
         setIsLoading(false);
         console.log('AuthContext: Logout finished, isLoading set to false.');
@@ -146,8 +140,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateUserContext = (updatedUser: User) => {
+    setUser(updatedUser);
+    SecureStore.setItemAsync('userSession', JSON.stringify(updatedUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, authError, login, logout, clearAuthError }}>
+    <AuthContext.Provider value={{ user, isLoading, authError, login, logout, updateUserContext, clearAuthError }}>
       {children}
     </AuthContext.Provider>
   );
@@ -160,3 +159,4 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+

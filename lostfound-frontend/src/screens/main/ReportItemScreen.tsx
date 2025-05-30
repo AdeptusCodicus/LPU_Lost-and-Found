@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, View, Alert, LayoutChangeEvent } from 'react-native';
+import { ScrollView, StyleSheet, View, Alert, LayoutChangeEvent, RefreshControl } from 'react-native'; // Add RefreshControl
 import {
   TextInput,
   Button,
@@ -8,27 +8,20 @@ import {
   Menu,
   Divider,
   HelperText,
-  Provider as PaperProvider, // Import PaperProvider
-  DefaultTheme, // Import DefaultTheme
+  Provider as PaperProvider,
+  DefaultTheme,
 } from 'react-native-paper';
 import { DatePickerModal } from 'react-native-paper-dates';
 import apiClient from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
-// Define your custom theme
 const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#800000', // This will be used for focused input borders and button text/borders
-    accent: '#800000', // You might want to set accent color as well
-    // Surface color for outlined input background when focused, if needed
-    // background: DefaultTheme.colors.background, // Keep default or customize
-    // text: DefaultTheme.colors.text, // Keep default or customize
-    // placeholder: DefaultTheme.colors.placeholder, // Keep default or customize
-    // onSurface: DefaultTheme.colors.onSurface, // For outlined input label when focused
+    primary: '#800000',
+    accent: '#800000',
   },
-  // To ensure outlined input border color on focus is primary and other properties are inherited
   roundness: DefaultTheme.roundness,
 };
 
@@ -47,7 +40,44 @@ const ReportItemScreen = ({ navigation }: any) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   const { user } = useAuth();
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    
+    setName('');
+    setDescription('');
+    setLocation('');
+    setContact('');
+    setDateReported(undefined); 
+    setItemType(''); 
+    
+    setErrors({});
+    setSubmitMessage(null);
+    
+    setOpenDatePicker(false);
+    setTypeMenuVisible(false);
+    
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
+
+  const parseDisplayDate = (dateString: string | undefined | null): string => {
+    if (!dateString) return 'N/A';
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; 
+      const day = parseInt(parts[2], 10);
+      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+        return new Date(year, month, day).toLocaleDateString();
+      }
+    }
+    return new Date(dateString).toLocaleDateString();
+  };
 
   const onDismissDatePicker = useCallback(() => {
     setOpenDatePicker(false);
@@ -97,12 +127,20 @@ const ReportItemScreen = ({ navigation }: any) => {
 
     setIsLoading(true);
     try {
+      let formattedDateReported = '';
+      if (dateReported) {
+        const year = dateReported.getFullYear();
+        const month = (dateReported.getMonth() + 1).toString().padStart(2, '0'); 
+        const day = dateReported.getDate().toString().padStart(2, '0');
+        formattedDateReported = `${year}-${month}-${day}`;
+      }
+
       const payload = {
         name,
         description,
         location,
         contact,
-        date_reported: dateReported?.toISOString().split('T')[0],
+        date_reported: formattedDateReported, 
         type: itemType,
       };
 
@@ -130,7 +168,19 @@ const ReportItemScreen = ({ navigation }: any) => {
 
   return (
     <PaperProvider theme={theme}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]} 
+            tintColor={theme.colors.primary} 
+            title="Pull to refresh" 
+            titleColor={theme.colors.primary} 
+          />
+        }
+      >
         <Text variant="headlineMedium" style={styles.title}>Report an Item</Text>
 
         {submitMessage && (
@@ -143,9 +193,10 @@ const ReportItemScreen = ({ navigation }: any) => {
           label="Item Name"
           value={name}
           onChangeText={setName}
-          mode="outlined" // Theme's primary color will be used for focused border
+          mode="outlined"
           style={styles.input}
           error={!!errors.name}
+          disabled={refreshing} 
           onBlur={() => { if(name.trim()) setErrors(prev => ({ ...prev, name: '' }))}}
         />
         {errors.name && <HelperText type="error" visible={!!errors.name}>{errors.name}</HelperText>}
@@ -159,6 +210,7 @@ const ReportItemScreen = ({ navigation }: any) => {
           multiline
           numberOfLines={3}
           error={!!errors.description}
+          disabled={refreshing} 
           onBlur={() => { if(description.trim()) setErrors(prev => ({ ...prev, description: '' }))}}
         />
         {errors.description && <HelperText type="error" visible={!!errors.description}>{errors.description}</HelperText>}
@@ -170,6 +222,7 @@ const ReportItemScreen = ({ navigation }: any) => {
           mode="outlined"
           style={styles.input}
           error={!!errors.location}
+          disabled={refreshing} 
           onBlur={() => { if(location.trim()) setErrors(prev => ({ ...prev, location: '' }))}}
         />
         {errors.location && <HelperText type="error" visible={!!errors.location}>{errors.location}</HelperText>}
@@ -182,19 +235,20 @@ const ReportItemScreen = ({ navigation }: any) => {
           style={styles.input}
           keyboardType="default" 
           error={!!errors.contact}
+          disabled={refreshing} 
           onBlur={() => { if(contact.trim()) setErrors(prev => ({ ...prev, contact: '' }))}}
         />
         {errors.contact && <HelperText type="error" visible={!!errors.contact}>{errors.contact}</HelperText>}
         
         <Button
           icon="calendar"
-          mode="outlined" // Theme's primary color will be used for text and border
+          mode="outlined"
           onPress={() => setOpenDatePicker(true)}
           style={styles.input}
-          // Explicitly set textColor, falling back to theme.colors.primary if not error
           textColor={errors.dateReported ? styles.errorColor.color : theme.colors.primary}
           uppercase={false}
           contentStyle={styles.buttonContent}
+          disabled={refreshing} 
         >
           {dateReported ? dateReported.toLocaleDateString() : 'Select Date Reported'}
         </Button>
@@ -217,16 +271,17 @@ const ReportItemScreen = ({ navigation }: any) => {
               <Button
                 mode="outlined"
                 onPress={openTypeMenu}
-                style={styles.input} // This style has marginBottom: 10
+                style={styles.input}
                 icon="chevron-down"
                 textColor={errors.itemType ? styles.errorColor.color : theme.colors.primary}
                 uppercase={false}
                 contentStyle={styles.buttonContent}
+                disabled={refreshing}
               >
                 {itemType ? (itemType === 'found' ? 'Found Item' : 'Lost Item') : 'Select Item Type'}
               </Button>
             }
-            style={{ marginTop: -50 }} // Add this line to pull the menu up
+            style={{ marginTop: -50 }}
             contentStyle={{ width: typeMenuAnchorWidth }}
           >
             <Menu.Item onPress={() => selectItemType('found')} title="Found Item" />
@@ -240,9 +295,9 @@ const ReportItemScreen = ({ navigation }: any) => {
           mode="contained"
           onPress={handleSubmit}
           loading={isLoading}
-          disabled={isLoading}
+          disabled={isLoading || refreshing} 
           style={styles.button}
-          buttonColor={theme.colors.primary} // Use theme color for consistency
+          buttonColor={theme.colors.primary}
         >
           {isLoading ? 'Submitting...' : 'Submit Report'}
         </Button>
@@ -259,13 +314,13 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 20,
     textAlign: 'center',
-    color: '#800000', // Or use theme.colors.primary if PaperProvider wraps title too
+    color: '#800000',
   },
   input: {
     marginBottom: 10,
   },
   buttonContent: { 
-    justifyContent: 'center', // Aligns content (icon and text) to the left
+    justifyContent: 'center',
   },
   button: {
     marginTop: 20,

@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { en, registerTranslation } from 'react-native-paper-dates';
+import { AppTheme } from './src/themes/AppTheme';
 
 registerTranslation('en', en);
 
@@ -28,7 +29,7 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <PaperProvider>
+          <PaperProvider theme={AppTheme}>
             <NavigationContainer>
               <RootNavigator />
               <StatusBar style="auto" />

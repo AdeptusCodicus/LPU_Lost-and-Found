@@ -1,10 +1,18 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, TouchableOpacity, ScrollView } from 'react-native';
-import { Text, Card, ActivityIndicator, Modal, Portal, Button, Divider } from 'react-native-paper';
+import { Text, Card, ActivityIndicator, Modal, Portal, Button, Divider, Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import apiClient from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#800000',
+    accent: '#800000',
+  },
+};
 interface FoundItem {
   id: number | string;
   name: string;
@@ -13,9 +21,6 @@ interface FoundItem {
   contact?: string;
   date_found: string;
   status: string;
-  // Add any other fields that might come from the backend
-  user_id?: number; // Example if backend sends it
-  image_url?: string; // Example
 }
 
 interface FoundItemsScreenProps {
@@ -29,7 +34,6 @@ const FoundItemsScreen: React.FC<FoundItemsScreenProps> = ({ searchQuery }) => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // State for Modal
   const [selectedItem, setSelectedItem] = useState<FoundItem | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -43,7 +47,6 @@ const FoundItemsScreen: React.FC<FoundItemsScreenProps> = ({ searchQuery }) => {
   };
 
   const fetchFoundItems = async () => {
-    // ... (fetchFoundItems logic remains the same)
     if (!user) {
         setError("Authentication required to view items.");
         setIsLoading(false);
@@ -76,7 +79,6 @@ const FoundItemsScreen: React.FC<FoundItemsScreenProps> = ({ searchQuery }) => {
   }, []);
 
   const filteredItems = useMemo(() => {
-    // ... (filteredItems logic remains the same)
     if (!searchQuery) {
       return allItems;
     }
@@ -89,17 +91,17 @@ const FoundItemsScreen: React.FC<FoundItemsScreenProps> = ({ searchQuery }) => {
   }, [allItems, searchQuery]);
 
   const renderItem = ({ item }: { item: FoundItem }) => (
-    <TouchableOpacity onPress={() => showModal(item)}>
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
-          <Text variant="bodySmall" style={styles.cardSubtitle}>Location: {item.location}</Text>
-          <Text variant="bodySmall" style={styles.cardSubtitle}>Date: {new Date(item.date_found).toLocaleDateString()}</Text>
-          {/* "Click to view" text can be added here if desired, or rely on interaction design */}
-          {/* <Text variant="labelSmall" style={styles.clickViewText}>Tap to view details</Text> */}
-        </Card.Content>
-      </Card>
-    </TouchableOpacity>
+    <PaperProvider theme={theme}>
+      <TouchableOpacity onPress={() => showModal(item)}>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+            <Text variant="bodySmall" style={styles.cardSubtitle}>Location: {item.location}</Text>
+            <Text variant="bodySmall" style={styles.cardSubtitle}>Date: {new Date(item.date_found).toLocaleDateString()}</Text>
+          </Card.Content>
+        </Card>
+      </TouchableOpacity>
+    </PaperProvider>  
   );
 
   if (isLoading && !refreshing && allItems.length === 0) {
@@ -121,7 +123,7 @@ const FoundItemsScreen: React.FC<FoundItemsScreenProps> = ({ searchQuery }) => {
   }
 
   return (
-    <>
+    <PaperProvider theme={theme}>
       <FlatList
         data={filteredItems}
         renderItem={renderItem}
@@ -176,17 +178,17 @@ const FoundItemsScreen: React.FC<FoundItemsScreenProps> = ({ searchQuery }) => {
           )}
         </Modal>
       </Portal>
-    </>
+    </PaperProvider>
   );
 };
 
 const styles = StyleSheet.create({
-  listContainer: { // Renamed from container to avoid conflict if outer view uses 'container'
+  listContainer: { 
     flexGrow: 1,
     padding: 10,
     backgroundColor: '#f5f5f5',
   },
-  container: { // General container for error/empty states
+  container: { 
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -203,7 +205,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardTitle: {
-    // fontSize: 18, // Handled by variant="titleMedium"
     fontWeight: 'bold',
     color: '#800000',
     marginBottom: 4,
@@ -212,11 +213,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#555',
   },
-  // clickViewText: { // Optional style for "click to view"
-  //   marginTop: 5,
-  //   color: '#800000',
-  //   textAlign: 'right',
-  // },
   emptyText: {
     textAlign: 'center',
     fontSize: 16,
@@ -227,7 +223,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'red',
   },
-  // Modal Styles
   modalContainer: {
     backgroundColor: 'white',
     padding: 20,
@@ -240,32 +235,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#800000',
   },
-  modalRow: { // Style for each row in the modal to ensure label and value are on the same line
+  modalRow: { 
     flexDirection: 'row',
     marginBottom: 10,
-    alignItems: 'flex-start', // Align items to the start of the cross axis
+    alignItems: 'flex-start',
   },
-  modalLabel: { // For the maroon labels like "Description:"
+  modalLabel: { 
     fontSize: 16,
     lineHeight: 24,
     color: '#800000',
-    fontWeight: 'bold', // Making labels bold for emphasis
-    marginRight: 5, // Space between label and value
+    fontWeight: 'bold', 
+    marginRight: 5, 
   },
-  modalValue: { // For the black value text
+  modalValue: { 
     fontSize: 16,
     lineHeight: 24,
-    color: '#000000', // Black color for values
-    flex: 1, // Allow value to take remaining space and wrap
+    color: '#000000', 
+    flex: 1, 
   },
-  statusLabel: { // Specifically for "Status:" label if it needs different styling from other labels
+  statusLabel: { 
     fontSize: 16,
     lineHeight: 24,
     color: '#800000',
     fontWeight: 'bold',
     marginRight: 5,
   },
-  statusValue: { // For the green and bold status value
+  statusValue: { 
     fontSize: 16,
     lineHeight: 24,
     color: 'green',

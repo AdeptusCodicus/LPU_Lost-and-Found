@@ -18,11 +18,13 @@
     "@types/react-native-vector-icons": "^6.4.18",
     "axios": "^1.9.0",
     "expo": "~53.0.9",
+    "expo-dev-client": "~5.1.8",
+    "expo-doctor": "^1.13.3",
     "expo-secure-store": "~14.2.3",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
     "react-native": "0.79.2",
-    "react-native-pager": "^0.0.3",
+    "react-native-pager-view": "6.7.1",
     "react-native-paper": "^5.14.5",
     "react-native-paper-dates": "^0.22.43",
     "react-native-safe-area-context": "5.4.0",
@@ -33,9 +35,11 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@types/react": "~19.0.10",
-    "@types/react-native": "^0.72.8",
     "typescript": "~5.8.3"
   },
-  "private": true
+  "resolutions": {
+    "@types/react": "~19.0.10"
+  },
+  "private": true,
+  "expo.doctor.reactNativeDirectoryCheck.listUnknownPackages": false
 }

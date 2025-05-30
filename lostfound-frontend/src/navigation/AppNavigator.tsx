@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/main/HomeScreen';
 import ReportItemScreen from '../screens/main/ReportItemScreen';
 import MyReportsScreen from '../screens/main/MyReportsScreen';
+import AccountScreen from '../screens/main/AccountScreen';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type AppTabParamList = {
@@ -43,7 +44,7 @@ const AppNavigator = () => {
                 <Tab.Screen name ="Home" component={HomeScreen} />
                 <Tab.Screen name ="Report" component={ReportItemScreen} />
                 <Tab.Screen name ="MyReports" component={MyReportsScreen} />
-                <Tab.Screen name ="Account" component={HomeScreen} />
+                <Tab.Screen name ="Account" component={AccountScreen} />
             </Tab.Navigator>
     );
 };
