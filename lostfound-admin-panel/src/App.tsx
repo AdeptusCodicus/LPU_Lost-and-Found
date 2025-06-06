@@ -12,6 +12,7 @@ import LostItems from './pages/LostItems';
 import FoundItems from './pages/FoundItems';
 import UserProfile from './pages/UserProfile';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
 
 const App: React.FC = () => {
   return (
@@ -27,6 +28,7 @@ const App: React.FC = () => {
         <Route path="/Reports/FoundItems" element={<FoundItems />} />
         <Route path="/UserProfile" element={<UserProfile />} />
         <Route path="/Login" element={<Login />} />
+        <Route path="/ForgotPassword" element={<ForgotPassword />} />
       </Routes>
     </Router>
   );

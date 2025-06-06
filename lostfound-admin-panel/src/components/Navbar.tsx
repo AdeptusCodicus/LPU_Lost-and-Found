@@ -190,7 +190,7 @@ export const Navbar = () => {
                         ? handleLogoutClick
                         : () => {
                             if (setting === 'Profile') {
-                              window.location.href = '/UserProfile'; // Route to UserProfile
+                              window.location.href = '/UserProfile'; // Redirect to UserProfile
                             } else {
                               handleCloseUserMenu();
                             }
