@@ -6,6 +6,7 @@ import Reports from './pages/Reports';
 import LostItems from './pages/LostItems';
 import FoundItems from './pages/FoundItems';
 import UserProfile from './pages/UserProfile';
+import Login from './pages/Login';
 
 const App: React.FC = () => {
   return (
@@ -17,6 +18,7 @@ const App: React.FC = () => {
         <Route path="/Reports/LostItems" element={<LostItems />} />
         <Route path="/Reports/FoundItems" element={<FoundItems />} />
         <Route path="/UserProfile" element={<UserProfile />} />
+        <Route path="/Login" element={<Login />} />
       </Routes>
     </Router>
   );
