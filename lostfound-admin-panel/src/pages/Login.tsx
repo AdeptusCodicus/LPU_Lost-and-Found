@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import '../styles/Login.css';
 import illustration from '../images/Illustration.png';
-import Footer from '../components/Footer'; // Import the Footer component
+import Footer from '../components/Footer';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -57,7 +58,9 @@ useEffect(() => {
 
         <div className="login-right">
           <form className="login-form" onSubmit={handleSubmit}>
-            <h2>Welcome to <span>LPU Lost & Found</span></h2>
+            <h2>
+              Welcome to <span>LPU Lost & Found</span>
+            </h2>
             <p className="note">* indicates a required field</p>
 
             {/* Display Alert instead of plain error message */}
@@ -114,15 +117,18 @@ useEffect(() => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={handleRememberMeChange}
-                /> Remember me
+                />{' '}
+                Remember me
               </label>
-              <a href="#">Forgot Password?</a>
+              {/* Route to "/ForgotPassword" */}
+              <Link to="/ForgotPassword">Forgot Password?</Link>
             </div>
 
             <button type="submit">Login</button>
 
             <p className="contact-note">
-              Don’t have an account? <br></br><a href="#">Contact your administrator</a>
+              Don’t have an account? <br />
+              <a href="#">Contact your administrator</a>
             </p>
           </form>
         </div>
