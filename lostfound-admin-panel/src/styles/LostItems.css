@@ -2,12 +2,14 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #ffffff; /* White background */
+  background-color: #fff;
 }
 
 .lost-items-main {
   flex-grow: 1;
   padding: 2rem;
+  max-width: 1200px; 
+  margin: 0 auto;   
 }
 
 .lost-items-title {
@@ -15,90 +17,94 @@
   font-weight: bold;
   text-align: center;
   color: maroon;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem; 
 }
 
 .lost-items-table {
   width: 100%;
   border-collapse: collapse;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin: 0 auto;
-  font-size: 1rem;
+  background-color: #fafafa; 
 }
 
 .lost-items-table th,
 .lost-items-table td {
   border: 1px solid #ddd;
-  padding: 0.75rem;
+  padding: 1rem; 
   text-align: left;
+  vertical-align: middle;
+}
+
+.lost-items-table thead {
+  background-color: #f5f5f5;
 }
 
 .lost-items-table th {
-  background-color: #f4f4f4;
-  font-weight: bold;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .lost-items-table tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #fdfdfd; /* Subtle stripe effect */
 }
 
 .lost-items-table tr:hover {
   background-color: #f1f1f1;
 }
 
+/* Status classes for color coding */
 .status.reported {
-  color: red;
+  color: #d9534f; /* Red for reported */
+  font-weight: bold;
 }
 
-.status.reunited {
-  color: green;
+.status.pending {
+  color: #f0ad4e; /* Orange for pending claim */
+  font-weight: bold;
 }
 
-/* General button styling */
+.status.claimed {
+  color: #5cb85c; /* Green for claimed */
+  font-weight: bold;
+}
+
+.status.archived {
+  color: #888;    /* Gray for archived */
+  font-weight: bold;
+}
+
+/* Modern button styling */
 .action-button {
-  padding: 0.2rem 1.2rem;
+  display: inline-block;
+  padding: 0.6rem 1rem;
   font-size: 0.9rem;
+  font-weight: 500;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
+  color: #fff;
   cursor: pointer;
   margin-right: 0.5rem;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .action-button:hover {
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Found button styling */
-.found-button {
-  background-color: #28a745; 
-  color: white;
+.claimed-button {
+  background-color: #28a745; /* Sleek green */
 }
 
-.found-button:hover {
-  background-color: #218838; 
+.claimed-button:hover {
+  background-color: #218838;
 }
 
-/* Remove button styling */
 .remove-button {
-  background-color: #dc3545; /* Red for "Remove" */
-  color: white;
+  background-color: #dc3545; /* Red color for remove */
 }
 
 .remove-button:hover {
-  background-color: #c82333; /* Darker red on hover */
-}
-
-/* Responsive design for buttons */
-@media (max-width: 768px) {
-  .action-button {
-    padding: 0.5rem 1rem; /* Adjust button padding */
-    font-size: 0.8rem; /* Smaller font size for buttons */
-  }
-}
-
-@media (max-width: 480px) {
-  .action-button {
-    padding: 0.4rem 0.8rem; /* Compact button padding */
-    font-size: 0.7rem; /* Compact button font size */
-  }
+  background-color: #c82333;
 }
