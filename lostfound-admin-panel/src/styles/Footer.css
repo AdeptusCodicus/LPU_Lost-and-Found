@@ -1,0 +1,9 @@
+.footer {
+  background-color: maroon; 
+  color: white; 
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.85rem; 
+  position: relative;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); 
+}

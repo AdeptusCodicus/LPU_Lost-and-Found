@@ -1,0 +1,92 @@
+.found-items-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #ffffff; /* White background */
+}
+
+.found-items-main {
+  flex-grow: 1;
+  padding: 2rem;
+}
+
+.found-items-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: maroon;
+  margin-bottom: 2rem;
+}
+
+.found-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto;
+  font-size: 1rem;
+}
+
+.found-items-table th,
+.found-items-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.found-items-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.found-items-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.found-items-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.item-thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.status.reported {
+  color: red;
+}
+
+.status.pending {
+  color: orange;
+}
+
+.status.claimed {
+  color: green;
+}
+
+.action-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.claimed-button {
+  background-color: green;
+  color: white;
+}
+
+.claimed-button:hover {
+  background-color: darkgreen;
+}
+
+.remove-button {
+  background-color: red;
+  color: white;
+}
+
+.remove-button:hover {
+  background-color: darkred;
+}

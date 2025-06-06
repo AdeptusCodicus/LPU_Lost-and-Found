@@ -1,0 +1,178 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f0f2f5;
+}
+
+.login-container {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+}
+
+/* Left side (Illustration placeholder) */
+.login-left {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+.input-icon {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.input-icon .icon {
+  width: 16px; 
+  height: 16px; 
+  margin-right: 8px; /* Add spacing between the icon and input field */
+}
+/* Right side (Form) */
+.login-right {
+  flex: 1.2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 450px;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.login-form h2 {
+  margin-bottom: 0.5rem;
+  color: #222;
+}
+
+.login-form h2 span {
+  color: maroon;
+  font-weight: bold;
+}
+
+.note {
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  color: #777;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: bold;
+}
+
+.input-icon {
+  display: flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+}
+
+.input-icon input {
+  border: none;
+  background: transparent;
+  margin-left: 0.5rem;
+  flex: 1;
+  font-size: 1rem;
+}
+
+.input-icon input:focus {
+  outline: none;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.login-options a {
+  color: maroon;
+  text-decoration: none;
+}
+
+.login-options a:hover {
+  text-decoration: underline;
+}
+
+button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: maroon;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #800000;
+}
+
+.contact-note {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.contact-note a {
+  color: maroon;
+  text-decoration: none;
+}
+
+.contact-note a:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+.login-footer {
+  text-align: center;
+  background-color: maroon;
+  color: white;
+  padding: 0.25rem;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .login-left {
+    height: 200px;
+    font-size: 1.2rem;
+  }
+}
+
+.login-illustration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.illustration-image {
+  max-width: 85%;
+  height: auto;
+  border-radius: 8px;
+}
