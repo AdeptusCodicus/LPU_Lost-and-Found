@@ -1,0 +1,211 @@
+.user-profile-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.user-profile-main {
+  flex-grow: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.user-profile-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: maroon;
+  margin-bottom: 2rem;
+}
+
+.profile-section {
+  margin-bottom: 3rem; /* Previously 2rem */
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid maroon;
+  padding-bottom: 0.5rem;
+}
+
+.profile-card {
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-card-header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.profile-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-right: 1.5rem;
+  border: 3px solid maroon;
+}
+
+.profile-info h3 {
+  font-size: 2rem; /* Increase size */
+  font-weight: bold;
+  margin: 0 0 0.75rem 0; /* More bottom margin */
+  color: #333;
+}
+
+.admin-badge {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: maroon;
+  margin: 0.5rem 0;
+}
+
+.profile-info p {
+  margin: 0.25rem 0;
+  color: #666; /* Slightly lighter color for less visual clutter */
+  font-size: 0.95rem; /* Smaller than the name */
+}
+
+.permissions-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  color: #333;
+}
+
+.permission-item::before {
+  content: "✔"; /* Green checkmark icon */
+  color: green;
+  margin-right: 0.5rem;
+}
+
+.actions-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.actions-table th,
+.actions-table td {
+  border: 1px solid #ddd;
+  padding: 0.9rem; /* Increase cell padding */
+  text-align: left;
+}
+
+.actions-table th {
+  background-color: #fafafa; /* Slightly lighter header */
+  font-weight: bold;
+}
+
+.actions-table tr:nth-child(even) {
+  background-color: #f9f9f9; /* Subtle stripe for easier reading */
+}
+
+.action-type.reunion {
+  color: green;
+  font-weight: bold;
+}
+
+.action-type.archive {
+  color: #b36b00; /* A deeper orange */
+  font-weight: bold;
+}
+
+.action-type.edit {
+  color: #0073e6; /* Muted blue */
+  font-weight: bold;
+}
+
+.security-options {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.security-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: 2px solid maroon;
+  border-radius: 8px;
+  background-color: white;
+  color: maroon;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.security-button:hover {
+  background-color: maroon;
+  color: white;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: center; /* Center buttons */
+  gap: 1.5rem; /* Increase spacing between buttons */
+  margin-top: 3rem; /* Increase top margin from the last section */
+}
+
+.action-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.save-button {
+  background-color: green;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: darkgreen;
+}
+
+.cancel-button {
+  background-color: red;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: darkred;
+}
+
+.action-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .profile-card-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-image {
+    margin: 0 0 1rem 0;
+  }
+  
+  .security-options {
+    flex-direction: column;
+  }
+  
+  .profile-actions {
+    flex-direction: column;
+  }
+}
