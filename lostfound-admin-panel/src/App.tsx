@@ -1,5 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate
+} from 'react-router-dom';
 import Home from './pages/Home';
 import Stats from './pages/Stats';
 import Reports from './pages/Reports';
@@ -12,6 +17,9 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
+        {/* Redirect from root path to /Login */}
+        <Route path="/" element={<Navigate to="/Login" />} />
+
         <Route path="/Home" element={<Home />} />
         <Route path="/Stats" element={<Stats />} />
         <Route path="/Reports" element={<Reports />} />
