@@ -53,29 +53,52 @@
   color: green;
 }
 
+/* General button styling */
 .action-button {
-  padding: 0.5rem 1rem;
+  padding: 0.2rem 1.2rem;
   font-size: 0.9rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   margin-right: 0.5rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+.action-button:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+/* Found button styling */
 .found-button {
-  background-color: green;
+  background-color: #28a745; 
   color: white;
 }
 
 .found-button:hover {
-  background-color: darkgreen;
+  background-color: #218838; 
 }
 
+/* Remove button styling */
 .remove-button {
-  background-color: red;
+  background-color: #dc3545; /* Red for "Remove" */
   color: white;
 }
 
 .remove-button:hover {
-  background-color: darkred;
+  background-color: #c82333; /* Darker red on hover */
+}
+
+/* Responsive design for buttons */
+@media (max-width: 768px) {
+  .action-button {
+    padding: 0.5rem 1rem; /* Adjust button padding */
+    font-size: 0.8rem; /* Smaller font size for buttons */
+  }
+}
+
+@media (max-width: 480px) {
+  .action-button {
+    padding: 0.4rem 0.8rem; /* Compact button padding */
+    font-size: 0.7rem; /* Compact button font size */
+  }
 }

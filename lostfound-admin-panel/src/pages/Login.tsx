@@ -128,7 +128,7 @@ useEffect(() => {
 
             <p className="contact-note">
               Don’t have an account? <br />
-              <a href="#">Contact your administrator</a>
+              <a href="mailto:LostFound.Admin@lpunetwork.edu.ph">Contact your administrator</a>
             </p>
           </form>
         </div>

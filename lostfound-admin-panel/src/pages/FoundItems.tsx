@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import Footer from '../components/Footer';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
 import "../styles/FoundItems.css";
 
 interface FoundItem {
@@ -62,47 +70,54 @@ const FoundItems: React.FC = () => {
       <Navbar />
       <main className="found-items-main">
         <h1 className="found-items-title">Found Items</h1>
-        <table className="found-items-table">
-          <thead>
-            <tr>
-              <th>Item Name</th>
-              <th>Date Found</th>
-              <th>Location</th>
-              <th>Description</th>
-              <th>Status</th>
-              <th>Finder</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {foundItems.map((item) => (
-              <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{item.dateFound}</td>
-                <td>{item.location}</td>
-                <td>{item.description}</td>
-                <td className={`status ${item.status.toLowerCase()}`}>
-                  {item.status}
-                </td>
-                <td>{item.finder}</td>
-                <td>
-                  <button
-                    className="action-button claimed-button"
-                    onClick={() => handleMarkAsClaimed(item.id)}
-                  >
-                    Mark as Claimed
-                  </button>
-                  <button
-                    className="action-button remove-button"
-                    onClick={() => handleRemoveItem(item.id)}
-                  >
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="responsive table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Item Name</TableCell>
+                <TableCell>Date Found</TableCell>
+                <TableCell>Location</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Finder</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {foundItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.dateFound}</TableCell>
+                  <TableCell>{item.location}</TableCell>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell className={`status ${item.status.toLowerCase()}`}>
+                    {item.status}
+                  </TableCell>
+                  <TableCell>{item.finder}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleMarkAsClaimed(item.id)}
+                      sx={{ marginBottom: 1, marginRight: 1 }} // Added spacing below and to the right
+
+                    >
+                      Mark as Claimed
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => handleRemoveItem(item.id)}
+                      sx={{ marginBottom: 1 }} // Added spacing below
+                    >
+                      Remove
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </main>
       <Footer />
     </div>
