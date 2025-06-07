@@ -1,0 +1,47 @@
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9f9f9; /* Light gray background for better readability */
+}
+
+.stats-main {
+  flex-grow: 1;
+  padding: 2rem;
+}
+
+.stats-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: maroon; /* Accent color for consistency */
+  margin-bottom: 2rem;
+}
+
+.stats-overview,
+.stats-category,
+.stats-location {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stats-overview h2,
+.stats-category h2,
+.stats-location h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.stats-overview p,
+.stats-category p,
+.stats-location p {
+  font-size: 1rem;
+  color: #555;
+  margin: 0.5rem 0;
+}

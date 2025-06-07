@@ -1,0 +1,110 @@
+.found-items-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #fff;
+}
+
+.found-items-main {
+  flex-grow: 1;
+  padding: 2rem;
+  max-width: 1200px; 
+  margin: 0 auto;   
+}
+
+.found-items-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: maroon;
+  margin-bottom: 2.5rem; 
+}
+
+.found-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  background-color: #fafafa; 
+}
+
+.found-items-table th,
+.found-items-table td {
+  border: 1px solid #ddd;
+  padding: 1rem; 
+  text-align: left;
+  vertical-align: middle;
+}
+
+.found-items-table thead {
+  background-color: #f5f5f5;
+}
+
+.found-items-table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.found-items-table tr:nth-child(even) {
+  background-color: #fdfdfd; /* Subtle stripe effect */
+}
+
+.found-items-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Status classes for color coding */
+.status.reported {
+  color: #d9534f; /* Red for reported */
+  font-weight: bold;
+}
+
+.status.pending {
+  color: #f0ad4e; /* Orange for pending claim */
+  font-weight: bold;
+}
+
+.status.claimed {
+  color: #5cb85c; /* Green for claimed */
+  font-weight: bold;
+}
+
+.status.archived {
+  color: #888;    /* Gray for archived */
+  font-weight: bold;
+}
+
+/* Modern button styling */
+.action-button {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.action-button:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.claimed-button {
+  background-color: #28a745; /* Sleek green */
+}
+
+.claimed-button:hover {
+  background-color: #218838;
+}
+
+.remove-button {
+  background-color: #dc3545; /* Red color for remove */
+}
+
+.remove-button:hover {
+  background-color: #c82333;
+}

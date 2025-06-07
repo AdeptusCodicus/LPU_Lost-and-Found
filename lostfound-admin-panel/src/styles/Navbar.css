@@ -1,0 +1,136 @@
+body {
+    overflow: hidden;
+}
+
+.active {
+    color: gold;
+    font-weight: bold;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: maroon;
+    color: gold;
+    position: sticky;
+    top: 0;
+    padding: 0.5rem 1rem;
+}
+
+nav .title {
+    font-size: 1.5rem;
+    margin: 1rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+}
+
+nav ul {
+    display: flex;
+}
+
+nav ul li {
+    list-style: none;
+}
+
+nav ul li a {
+    display: block;
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    padding: 0.5rem;
+    margin: 0 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+nav ul li a:not(.active):hover {
+    background-color: #800000;
+    color: gold;
+}
+
+nav .menu {
+    display: none;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.5rem;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 2.25rem;
+    height: 2rem;
+}
+
+nav .menu span {
+    height: 0.4rem;
+    width: 100%;
+    background-color: gold; /* Gold menu lines */
+    border-radius: 0.2rem;
+}
+
+.dropdown {
+  position: absolute;
+  background-color: maroon; /* Dropdown background */
+  color: gold; /* Dropdown text color */
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 0.5rem;
+  z-index: 1000; 
+  opacity: 0; 
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease; 
+  pointer-events: none; 
+}
+
+.dropdown.visible {
+  opacity: 1; 
+  transform: translateY(0); 
+  pointer-events: auto; 
+}
+
+.dropdown button {
+  background-color: transparent;
+  border: none;
+  color: gold;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.5rem;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdown button:hover {
+  background-color: #800000; /* Darker maroon for hover effect */
+  color: white; /* White text on hover */
+}
+
+@media (max-width: 480px) {
+    nav .menu {
+        display: flex;
+    }
+
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    nav ul {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+
+    nav ul.open {
+        display: flex;
+    }
+
+    nav ul li {
+        width: 100%;
+        text-align: center;
+    }
+
+    nav ul li a {
+        margin: 0.2rem 0.5rem;
+    }
+}

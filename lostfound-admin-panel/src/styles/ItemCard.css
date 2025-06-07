@@ -1,0 +1,179 @@
+body {
+  overflow: auto;
+}
+
+.item-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.item-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 15px; /* Slightly increased corner radius for a softer look */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for a cleaner look */
+  background-color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for hover effects */
+  width: 100%;
+  max-width: 350px;
+}
+
+.item-card:hover {
+  transform: translateY(-5px); /* Slight lift on hover */
+  box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow on hover */
+}
+
+.item-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: red;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-right: 1rem;
+}
+
+.item-header-details {
+  flex-grow: 1;
+}
+
+.item-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.item-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.item-type {
+  font-weight: bold;
+}
+
+.item-type.lost {
+  color: #d9534f; /* Soft muted red for "Lost" */
+}
+
+.item-type.found {
+  color: #5cb85c; /* Soft muted green for "Found" */
+}
+
+.item-date {
+  font-style: italic;
+}
+
+.item-info {
+  margin-top: 1rem;
+}
+
+.item-location {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.item-location strong {
+  font-weight: bold;
+}
+
+.item-description {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.item-description p {
+  margin: 0;
+}
+
+.item-card:hover .avatar {
+  background-color: #800000; /* Slightly darker red on hover */
+}
+
+.contact-btn {
+  background-color: maroon;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.contact-btn:hover {
+  background-color: #800000;
+  transform: scale(1.05);
+}
+
+.item-status {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.item-Type {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: maroon;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-right: 1rem;
+}
+
+.item-Type.lost span {
+  color: white;
+  background-color: red;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.item-Type.found span {
+  color: white;
+  background-color: green;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.action-button {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  margin: 0.5rem; /* Add margin for spacing */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}

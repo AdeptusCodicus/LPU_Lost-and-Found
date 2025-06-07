@@ -1,0 +1,76 @@
+/* Root container for the home page */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9f9f9; /* Light gray background for better contrast */
+}
+
+/* Page content wrapper (excluding header & footer) */
+.main-content {
+  flex: 1;
+  padding: 2rem 4vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Page title */
+.page-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+/* Search bar spacing */
+.search-section {
+  margin-bottom: 2rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Grid layout for item cards */
+.card-grid {
+  display: block;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.home-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+  flex: 1;
+  padding: 2rem;
+}
+
+.home-main h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+}
+
+.item-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.home-title {
+  font-size: 2.5rem; /* Larger font size for emphasis */
+  font-weight: bold; /* Bold for stronger visual hierarchy */
+  text-align: center; /* Center-align horizontally */
+  margin-bottom: 2rem; /* Adequate spacing below */
+  color: maroon; /* Accent color for consistency */
+}
