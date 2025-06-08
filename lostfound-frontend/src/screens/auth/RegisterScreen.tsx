@@ -64,8 +64,8 @@ const RegisterScreen = () => {
       setError('Please enter a valid LPU email address.');
       return false;
     }
-    if (!email.endsWith('@lpu.edu.ph')) {
-        setError('Please use your LPU email address (ends with @lpu.edu.ph).');
+    if (!email.endsWith('@lpunetwork.edu.ph')) {
+        setError('Please use your LPU email address (ends with @lpunetwork.edu.ph).');
         return false;
     }
     if (!password) {
