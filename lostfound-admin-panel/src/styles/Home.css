@@ -6,71 +6,129 @@
   background-color: #f9f9f9; /* Light gray background for better contrast */
 }
 
-/* Page content wrapper (excluding header & footer) */
-.main-content {
+/* Main content area of the home page, below header, above footer/navbar */
+.home-main {
+  flex: 1; /* Allows this section to grow and fill available space */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content like search bar and card container */
+  padding: 0; /* Remove padding if tabs span full width directly under header */
+  width: 100%;
+}
+
+/* Page content wrapper (excluding header & footer) - This might be redundant if home-main serves this purpose */
+/* .main-content {
   flex: 1;
   padding: 2rem 4vw;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
+} */
 
-/* Page title */
+/* Page title - If you have a general page title above tabs */
 .page-title {
-  font-size: 3rem;
+  font-size: 2.5rem; /* Adjusted from 3rem to match home-title */
   font-weight: 700;
-  color: #333;
+  color: maroon; /* Consistent with home-title */
   margin-bottom: 1.5rem;
+  text-align: center;
+  width: 100%;
+  padding-top: 1.5rem; /* Add some space if it's the first element after header */
 }
 
-/* Search bar spacing */
-.search-section {
-  margin-bottom: 2rem;
+/* Home title specific styling - can be used instead of .page-title if preferred */
+.home-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem; /* Reduced margin if tabs are directly below */
+  color: maroon;
   width: 100%;
+  padding-top: 1.5rem; /* Space from header */
+}
+
+
+/* Tabs Container */
+.tabs-container {
+  display: flex;
+  width: 100%;
+  background-color: #f8f9fa; /* Light background for the tab bar */
+  border-bottom: 2px solid #dee2e6;
+  /* margin-bottom: 1.5rem; /* Space below tabs before search/content */
+}
+
+.tab-button {
+  flex-grow: 1;
+  flex-basis: 0;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  color: #495057;
+  background-color: transparent;
+  border: none;
+  border-right: 1px solid #dee2e6;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.tab-button:last-child {
+  border-right: none;
+}
+
+.tab-button:hover {
+  color: maroon;
+  background-color: #e9ecef;
+}
+
+.tab-button.active {
+  color: white;
+  font-weight: 600;
+  background-color: maroon;
+}
+
+/* Search bar section */
+.search-section {
+  margin-top: 1.5rem; /* Space above search bar, below tabs */
+  margin-bottom: 1.5rem; /* Space below search bar */
+  width: 100%;
+  max-width: 600px; /* Max width for the search bar itself */
   display: flex;
   justify-content: center;
+  padding: 0 1rem; /* Add some horizontal padding for smaller screens */
+  box-sizing: border-box;
 }
 
-/* Grid layout for item cards */
-.card-grid {
-  display: block;
+/* Item card container - for the grid of items */
+.item-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem; /* Adjusted gap */
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0 1rem 2rem 1rem; /* Padding around the cards, esp. bottom */
+  box-sizing: border-box;
+  max-width: fit-content; /* Max width for the content area of cards */
+}
+
+/* Grid layout for item cards - if you prefer CSS Grid over Flexbox for item-card-container */
+/* .card-grid {
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 2rem;
   width: 100%;
   max-width: 1200px;
   justify-content: center;
   align-items: flex-start;
-}
+  padding: 0 1rem 2rem 1rem;
+  box-sizing: border-box;
+} */
 
-.home-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 2rem;
-  flex: 1;
-  padding: 2rem;
-}
-
-.home-main h1 {
+.no-items-message {
   text-align: center;
-  margin-bottom: 1rem;
-  font-size: 2rem;
-}
-
-.item-card-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  justify-content: center;
-  align-items: flex-start;
+  color: #777;
+  font-size: 1.1rem;
+  padding: 2rem;
   width: 100%;
-  margin: 0 auto;
-}
-
-.home-title {
-  font-size: 2.5rem; /* Larger font size for emphasis */
-  font-weight: bold; /* Bold for stronger visual hierarchy */
-  text-align: center; /* Center-align horizontally */
-  margin-bottom: 2rem; /* Adequate spacing below */
-  color: maroon; /* Accent color for consistency */
 }

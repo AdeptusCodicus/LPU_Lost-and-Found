@@ -1,0 +1,120 @@
+.reports-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 80px; /* Adjust if navbar height is different */
+  background-color: #f4f7f6; /* Light background for the page */
+  /* padding-top from a global header/navbar is assumed to be handled by .reports-container's parent or a fixed header */
+}
+
+.reports-main { /* Scoping container for report page specific styles */
+  flex-grow: 1;
+  padding: 0; /* Set padding to 0 to allow children like tabs-container to be flush */
+  /* max-width: 1200px; REMOVED to allow full width for tabs */
+  /* margin: 0 auto; REMOVED to allow full width for tabs */
+  width: 100%; /* Ensures it spans the full viewport width */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* This will center children that have a max-width and margin:auto */
+}
+
+/* Scoped tab styles for Reports page - MATCHING HOME.CSS */
+.reports-main .tabs-container {
+  display: flex;
+  width: 100%; /* Make tabs span full width of .reports-main (which is now page width) */
+  background-color: #f8f9fa; /* Light background for the tab bar */
+  border-bottom: 2px solid #dee2e6;
+  /* margin-bottom: 1.5rem; */ /* Space below tabs, adjust as needed or remove if search is not present */
+}
+
+.reports-main .tab-button {
+  flex-grow: 1;
+  flex-basis: 0;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  color: #495057;
+  background-color: transparent;
+  border: none;
+  border-right: 1px solid #dee2e6; /* Add border between tabs */
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.reports-main .tab-button:last-child {
+  border-right: none; /* Remove border from the last tab */
+}
+
+.reports-main .tab-button:hover {
+  color: maroon;
+  background-color: #e9ecef;
+}
+
+.reports-main .tab-button.active {
+  color: white;
+  font-weight: 600;
+  background-color: maroon;
+  border-bottom-color: maroon; /* Ensure active tab border matches background if any was previously set */
+}
+
+
+/* Original Reports.css styles for content below tabs */
+.reports-main .report-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%; /* Will be constrained by max-width */
+  max-width: 1200px; /* ADDED: Constrain and center the card container */
+  margin-left: auto;   /* ADDED: Center the card container */
+  margin-right: auto;  /* ADDED: Center the card container */
+  padding: 1.5rem 20px 20px 20px; /* Padding within the constrained width */
+  box-sizing: border-box; /* Ensure padding is within the width/max-width */
+}
+
+.reports-main .loading-message,
+.reports-main .error-message,
+.reports-main .no-reports-message {
+  text-align: center;
+  font-size: 18px;
+  padding: 20px;
+  color: #555;
+  width: 100%; /* Will be constrained by max-width */
+  max-width: 1200px; /* ADDED: Constrain and center these messages */
+  margin-left: auto;   /* ADDED: Center these messages */
+  margin-right: auto;  /* ADDED: Center these messages */
+  box-sizing: border-box;
+}
+
+.reports-main .error-message {
+  color: red;
+}
+
+/* Button styles for approve/reject */
+.reports-main .approve-button {
+  background-color: #28a745; /* Green */
+  color: white;
+}
+
+.reports-main .approve-button:hover {
+  background-color: #218838;
+}
+
+.reports-main .reject-button {
+  background-color: #dc3545; /* Red */
+  color: white;
+}
+
+.reports-main .reject-button:hover {
+  background-color: #c82333;
+}
+
+.reports-main .action-button { /* This might be shared with ItemCard.css, ensure consistency or scope if needed */
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 10px;
+  transition: background-color 0.2s ease-in-out;
+}

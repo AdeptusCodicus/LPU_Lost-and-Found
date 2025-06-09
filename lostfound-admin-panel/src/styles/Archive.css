@@ -1,0 +1,153 @@
+.archive-page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f7f6; /* Consistent page background */
+  padding-bottom: 80px; /* Space for navbar */
+}
+
+.archive-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 0; /* Tabs will span full width */
+}
+
+/* Tabs Container - Copied from Home.css/Reports.css and scoped */
+.archive-main .tabs-container {
+  display: flex;
+  width: 100%;
+  background-color: #f8f9fa; /* Light background for the tab bar */
+  border-bottom: 2px solid #dee2e6;
+}
+
+.archive-main .tab-button {
+  flex-grow: 1;
+  flex-basis: 0;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  color: #495057;
+  background-color: transparent;
+  border: none;
+  border-right: 1px solid #dee2e6;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.archive-main .tab-button:last-child {
+  border-right: none;
+}
+
+.archive-main .tab-button:hover {
+  color: maroon;
+  background-color: #e9ecef;
+}
+
+.archive-main .tab-button.active {
+  color: white;
+  font-weight: 600;
+  background-color: maroon;
+}
+
+/* Search Container */
+.search-container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-right: 2.5rem; /* Space for clear button */
+  font-size: 1rem;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #495057;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  border-color: maroon;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.25);
+}
+
+.clear-search-button {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.clear-search-button:hover {
+  color: maroon;
+  background-color: #f8f9fa;
+}
+
+.search-results-count {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 0;
+  text-align: center;
+}
+
+/* Item card container for archived items */
+.archive-main .archive-item-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.archive-main .loading-message,
+.archive-main .error-message,
+.archive-main .no-items-message {
+  text-align: center;
+  font-size: 1.1rem;
+  padding: 2rem;
+  color: #555;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.archive-main .error-message {
+  color: red;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .search-container {
+    padding: 1rem;
+  }
+  
+  .archive-main .archive-item-card-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}

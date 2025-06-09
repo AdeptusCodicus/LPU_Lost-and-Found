@@ -1,0 +1,104 @@
+.dock-navbar {
+  position: fixed;
+  bottom: 15px; /* Reduced from 20px */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(128, 0, 0, 0.85);
+  border-radius: 17px; /* Reduced from 22px */
+  padding: 6px 11px; /* Reduced from 8px 15px */
+  display: flex;
+  align-items: center; /* Align toggle button vertically */
+  gap: 11px; /* Reduced from 15px */
+  z-index: 1100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); /* Adjusted shadow */
+  transition: all 0.3s ease-in-out, height 0.3s ease-in-out, padding 0.3s ease-in-out;
+  height: auto;
+}
+
+.dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 4px; /* Reduced from 5px */
+  border-radius: 9px; /* Reduced from 12px */
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, opacity 0.3s ease-in-out, width 0.3s ease-in-out;
+  min-width: 53px; /* Reduced from 70px */
+  text-align: center;
+  opacity: 1;
+  width: auto;
+}
+
+.dock-item:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px); /* Adjusted from -3px */
+}
+
+.dock-item.active {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.dock-icon-button {
+  padding: 6px; /* Reduced from 8px */
+  color: white !important;
+}
+
+.dock-icon {
+  font-size: 23px !important; /* Reduced from 30px */
+  margin-bottom: 1px; /* Reduced from 2px */
+}
+
+.dock-title {
+  font-size: 8px; /* Reduced from 11px */
+  font-weight: 500;
+  color: white;
+  margin-top: 1px; /* Reduced from 2px */
+  white-space: nowrap; /* Prevent title from wrapping */
+  line-height: 1.2; /* Added for better readability at small size */
+}
+
+/* Styles for the minimize/maximize toggle button */
+.minimize-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  padding: 5px; /* Reduced from 6px */
+  border-radius: 50%; /* Make it circular */
+  transition: background-color 0.2s ease-in-out;
+  margin-left: auto; /* Pushes it to the right if items are present */
+}
+
+.minimize-toggle-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.toggle-arrow-icon {
+  font-size: 18px !important; /* Reduced from 24px */
+}
+
+/* Styles for when the navbar is minimized */
+.dock-navbar.minimized {
+  padding: 4px 6px; /* Reduced from 5px 8px */
+  gap: 0; /* No gap as items are hidden */
+  border-radius: 14px; /* Reduced from 18px */
+  /* bottom: 8px; Optional: move it further down when minimized (25% of 10px) */
+}
+
+.dock-navbar.minimized .dock-item {
+  opacity: 0;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden; /* Hide content completely */
+  display: none; /* Fallback if transitions aren't fully supported or for immediate hide */
+}
+
+.dock-navbar.minimized .minimize-toggle-button {
+  margin-left: 0; /* Center it when no other items */
+}

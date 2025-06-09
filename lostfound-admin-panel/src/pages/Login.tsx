@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import CheckIcon from '@mui/icons-material/Check';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import '../styles/Login.css';
 import illustration from '../images/Illustration.png';
 import Footer from '../components/Footer';
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  // const [loading, setLoading] = useState(false); // Loading state will be from context
+  // const [errorMessage, setErrorMessage] = useState(''); // Error message will be from context
+
+  const { login, authError, isLoading, clearAuthError } = useAuth(); // Use context
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/Home";
 
   // Load email from local storage if "Remember me" was previously checked
   useEffect(() => {
@@ -19,33 +26,37 @@ const Login: React.FC = () => {
       setEmail(savedEmail);
       setRememberMe(true);
     }
+    // Clear any previous auth errors when the component mounts or email/password changes
+    return () => {
+      clearAuthError();
+    };
+  }, [clearAuthError]);
+
+
+  useEffect(() => {
+    document.title = 'Login | LPU Lost & Found Admin';
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearAuthError(); // Clear previous errors
 
-    // Hardcoded credentials
-    const validEmail = 'lpuadmin@lpunetwork.edu.ph';
-    const validPassword = 'LPUlost&found';
+    const success = await login(email, password); // Call login from context
 
-    if (email === validEmail && password === validPassword) {
+    if (success) {
       if (rememberMe) {
-        localStorage.setItem('rememberedEmail', email); // Save email to local storage
+        localStorage.setItem('rememberedEmail', email);
       } else {
-        localStorage.removeItem('rememberedEmail'); // Remove email from local storage
+        localStorage.removeItem('rememberedEmail');
       }
-      window.location.href = '/Home'; // Redirect to Home page
-    } else {
-      setErrorMessage('Invalid email or password. Please try again.');
+      navigate(from, { replace: true }); // Navigate to intended page or Home
     }
+    // Error handling is managed by displaying authError from context
   };
 
   const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRememberMe(e.target.checked);
   };
-useEffect(() => {
-    document.title = 'Login | LPU Lost & Found';
-  }, []);
 
   return (
     <div className="login-page">
@@ -63,14 +74,14 @@ useEffect(() => {
             </h2>
             <p className="note">* indicates a required field</p>
 
-            {/* Display Alert instead of plain error message */}
-            {errorMessage && (
+            {authError && (
               <Alert
-                icon={<CheckIcon fontSize="inherit" />}
+                icon={<ErrorOutlineIcon fontSize="inherit" />}
                 severity="error"
                 sx={{ mb: 2 }}
+                onClose={() => clearAuthError()} // Allow dismissing error
               >
-                {errorMessage}
+                {authError}
               </Alert>
             )}
 
@@ -88,7 +99,8 @@ useEffect(() => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="email" // Enable browser autocomplete for email
+                  autoComplete="email"
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -107,6 +119,7 @@ useEffect(() => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -117,15 +130,16 @@ useEffect(() => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={handleRememberMeChange}
+                  disabled={isLoading}
                 />{' '}
                 Remember me
               </label>
-              {/* Route to "/ForgotPassword" */}
               <Link to="/ForgotPassword">Forgot Password?</Link>
             </div>
 
-            <button type="submit">Login</button>
-
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Login'}
+            </button>
             <p className="contact-note">
               Don’t have an account? <br />
               <a href="mailto:LostFound.Admin@lpunetwork.edu.ph">Contact your administrator</a>
@@ -133,8 +147,7 @@ useEffect(() => {
           </form>
         </div>
       </div>
-
-      <Footer /> {/* Use the reusable Footer component */}
+      <Footer />
     </div>
   );
 };

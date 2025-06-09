@@ -1,0 +1,149 @@
+.item-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0; /* Lighter border */
+  border-radius: 12px; /* Consistent rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer shadow */
+  background-color: #fff;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  width: 100%; /* Takes full width of its grid cell */
+  max-width: 400px; /* Max width for a card, adjust as needed */
+  box-sizing: border-box;
+  margin-bottom: 1rem; /* Space below each card if they stack */
+}
+
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* Report card header */
+.item-card .item-card-header { /* Increased specificity */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.item-card .item-card-header h3 { /* Increased specificity */
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Report status (pending, approved, rejected) */
+.item-card .item-status { /* Increased specificity */
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.item-card .item-status-pending { /* Increased specificity */
+  background-color: #ffc107; /* Amber/Yellow */
+  color: #333;
+}
+
+.item-card .item-status-approved { /* Increased specificity */
+  background-color: #28a745; /* Green */
+  color: white;
+}
+
+.item-card .item-status-rejected { /* Increased specificity */
+  background-color: #dc3545; /* Red */
+  color: white;
+}
+
+/* Report details styling */
+.item-card p {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.item-card p strong {
+  font-weight: 600;
+  color: #333;
+  margin-right: 0.5em;
+}
+
+.item-card .item-type { /* Increased specificity */
+  font-style: italic;
+  color: #666;
+  margin-bottom: 1rem !important;
+}
+
+
+/* Actions area at the bottom of the card */
+.item-card .item-card-actions { /* Increased specificity */
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end; /* Align buttons to the right */
+}
+
+/* Base action button style */
+.item-card .action-button { /* Increased specificity */
+  padding: 0.6rem 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  color: #fff; /* Default text color */
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  /* background-color is intentionally not set here, to be set by specific button type */
+}
+
+.item-card .action-button:hover { /* Increased specificity */
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.item-card .action-button:active { /* Increased specificity */
+  transform: translateY(0px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Specific button styles for Approve and Reject */
+.item-card .approve-button { /* Increased specificity */
+  background-color: #28a745 !important; /* Green */
+}
+.item-card .approve-button:hover { /* Increased specificity */
+  background-color: #218838 !important; /* Darker Green */
+}
+
+.item-card .reject-button { /* Increased specificity */
+  background-color: #dc3545 !important; /* Red */
+}
+.item-card .reject-button:hover { /* Increased specificity */
+  background-color: #c82333 !important; /* Darker Red */
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 400px) {
+  .item-card .item-card-header { /* Increased specificity */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .item-card .item-card-actions { /* Increased specificity */
+    flex-direction: column; /* Stack buttons vertically */
+  }
+  .item-card .action-button { /* Increased specificity */
+    width: 100%; /* Make buttons full width in column layout */
+  }
+}
