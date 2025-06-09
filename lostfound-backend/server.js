@@ -975,6 +975,43 @@ fastify.post("/admin/item/:id/mark-expired", { preHandler: verifyAdmin }, async 
   }
 });
 
+fastify.delete("/admin/item/delete/:id", { preHandler: verifyAdmin }, async (req, reply) => {
+  const itemId = Number(req.params.id);
+  if (isNaN(itemId) || !isFinite(itemId)) {
+    return reply.status(400).send({ error: "Invalid item ID format." });
+  }
+
+  try {
+    let deletedItem;
+    let itemType;
+
+    const foundItemToDelete = await db.select().from(foundItems).where(eq(foundItems.id, itemId)).get();
+    if (foundItemToDelete) {
+      deletedItem = await db.delete(foundItems).where(eq(foundItems.id, itemId)).returning().get();
+      itemType = "found";
+    } else {
+      const lostItemToDelete = await db.select().from(lostItems).where(eq(lostItems.id, itemId)).get();
+      if (lostItemToDelete) {
+        deletedItem = await db.delete(lostItems).where(eq(lostItems.id, itemId)).returning().get();
+        itemType = "lost";
+      }
+    }
+
+    if (!deletedItem) {
+      return reply.status(404).send({ error: "Item not found in either found or lost items to delete." });
+    }
+
+    const broadcastType = itemType === "found" ? "FOUND_ITEM_DELETED" : "LOST_ITEM_DELETED";
+    broadcast({ type: broadcastType, payload: { id: itemId } }); // Send ID of deleted item
+
+    reply.send({ message: `Item (ID: ${itemId}, type: ${itemType}) deleted successfully.` });
+
+  } catch (error) {
+    fastify.log.error(error, `Error deleting item ID ${itemId} by admin ${req.user.email}`);
+    reply.status(500).send({ error: "Internal server error while deleting item." });
+  }
+});
+
 fastify.get("/found-items", { preHandler: verifyMultiple }, async (req, reply) => {
   const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).orderBy(desc(foundItems.id)).all();
   reply.send({ items });
