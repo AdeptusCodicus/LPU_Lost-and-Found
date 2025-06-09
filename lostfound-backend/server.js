@@ -38,6 +38,13 @@ const connections = new Set();
 await fastify.register(cors, { origin: '*' });
 await fastify.register(fastifyWebsocket);
 
+await fastify.register(cors, {
+  origin: "*", 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+  credentials: true, 
+});
+
 function broadcast(data){
   const message = JSON.stringify(data);
   console.log("Broadcasting message:", message);

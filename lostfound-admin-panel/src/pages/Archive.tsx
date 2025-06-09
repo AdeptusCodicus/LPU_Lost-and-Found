@@ -13,13 +13,14 @@ interface ArchivedItem {
   description?: string | null;
   location: string;
   contact: string;
-  date_reported: string;
-  itemType: 'Lost' | 'Found';
-  status: 'claimed' | 'found' | 'expired' | string;
+  date_reported: string; // This will be date_found, date_lost, or a relevant archive date
+  itemType: 'Lost' | 'Found'; // Original type of the item
+  status: 'claimed' | 'found' | 'expired' | string; // Actual status
   user_email?: string | null;
-  date_found?: string;
-  date_lost?: string;
-  owner?: string;
+  // Add any other fields your ItemCard might expect or that come from the backend
+  date_found?: string; // if applicable from foundItems
+  date_lost?: string; // if applicable from lostItems
+  owner?: string; // if applicable from lostItems
 }
 
 type ArchiveTab = 'Claimed' | 'Reunited' | 'Expired';
@@ -78,9 +79,9 @@ const Archive: React.FC = () => {
       const filtered = archivedItems.filter(item =>
         item.name.toLowerCase().includes(lowerSearchQuery) ||
         item.location.toLowerCase().includes(lowerSearchQuery) ||
-        item.description?.toLowerCase().includes(lowerSearchQuery) ||
+        (item.description && item.description.toLowerCase().includes(lowerSearchQuery)) ||
         item.contact.toLowerCase().includes(lowerSearchQuery) ||
-        item.user_email?.toLowerCase().includes(lowerSearchQuery)
+        (item.user_email && item.user_email.toLowerCase().includes(lowerSearchQuery))
       );
       setFilteredItems(filtered);
     }
@@ -102,9 +103,11 @@ const Archive: React.FC = () => {
 
     setDeletingItemId(itemId);
     try {
+      // Backend route /admin/item/delete/:id uses itemId from URL.
+      // The itemType in data is not strictly needed by this specific backend endpoint but can be kept.
       await axios.delete(`${API_BASE_URL}/admin/item/delete/${itemId}`, {
         headers: { Authorization: `Bearer ${token}` },
-        data: { itemId, itemType: itemType.toLowerCase() }
+        // data: { itemId, itemType: itemType.toLowerCase() } // This data payload is not used by the /admin/item/delete/:id route
       });
 
       const updatedItems = archivedItems.filter(item => item.id !== itemId);
@@ -117,9 +120,9 @@ const Archive: React.FC = () => {
         setFilteredItems(updatedItems.filter(item =>
           item.name.toLowerCase().includes(lowerSearchQuery) ||
           item.location.toLowerCase().includes(lowerSearchQuery) ||
-          item.description?.toLowerCase().includes(lowerSearchQuery) ||
+          (item.description && item.description.toLowerCase().includes(lowerSearchQuery)) ||
           item.contact.toLowerCase().includes(lowerSearchQuery) ||
-          item.user_email?.toLowerCase().includes(lowerSearchQuery)
+          (item.user_email && item.user_email.toLowerCase().includes(lowerSearchQuery))
         ));
       }
       alert('Item deleted successfully.');
