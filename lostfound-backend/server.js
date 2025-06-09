@@ -908,6 +908,73 @@ fastify.post("/admin/lost-items/:id/mark-found", { preHandler: verifyAdmin }, as
   }
 });
 
+fastify.post("/admin/item/:id/mark-expired", { preHandler: verifyAdmin }, async (req, reply) => {
+  const itemId = Number(req.params.id);
+  if (isNaN(itemId) || !isFinite(itemId)) {
+    return reply.status(400).send({ error: "Invalid item ID format." });
+  }
+
+  try {
+    let itemToUpdate;
+    let itemType; 
+
+    itemToUpdate = await db.select().from(foundItems).where(eq(foundItems.id, itemId)).get();
+    if (itemToUpdate) {
+      itemType = "found";
+      if (itemToUpdate.status === 'claimed') {
+        return reply.status(400).send({ error: "Found item is already claimed and cannot be marked as expired." });
+      }
+      if (itemToUpdate.status === 'expired') {
+        return reply.status(400).send({ error: "Item is already marked as expired." });
+      }
+    } else {
+      // If not in foundItems, try lostItems
+      itemToUpdate = await db.select().from(lostItems).where(eq(lostItems.id, itemId)).get();
+      if (itemToUpdate) {
+        itemType = "lost";
+        if (itemToUpdate.status === 'found') {
+          return reply.status(400).send({ error: "Lost item has been marked as found and cannot be marked as expired." });
+        }
+        if (itemToUpdate.status === 'expired') {
+          return reply.status(400).send({ error: "Item is already marked as expired." });
+        }
+      }
+    }
+
+    if (!itemToUpdate) {
+      return reply.status(404).send({ error: "Item not found in either found or lost items." });
+    }
+
+    let updatedItem;
+    if (itemType === "found") {
+      updatedItem = await db.update(foundItems)
+        .set({ status: "expired" })
+        .where(eq(foundItems.id, itemId))
+        .returning()
+        .get();
+    } else if (itemType === "lost") {
+      updatedItem = await db.update(lostItems)
+        .set({ status: "expired" })
+        .where(eq(lostItems.id, itemId))
+        .returning()
+        .get();
+    }
+
+    if (!updatedItem) {
+      return reply.status(500).send({ error: "Failed to update item status to expired." });
+    }
+
+    const broadcastType = itemType === "found" ? "FOUND_ITEM_STATUS_UPDATED" : "LOST_ITEM_STATUS_UPDATED";
+    broadcast({ type: broadcastType, payload: updatedItem });
+
+    reply.send({ message: `Item (type: ${itemType}) marked as expired.`, item: updatedItem });
+
+  } catch (error) {
+    fastify.log.error(error, `Error marking item ID ${itemId} as expired by admin ${req.user.email}`);
+    reply.status(500).send({ error: "Internal server error." });
+  }
+});
+
 fastify.get("/found-items", { preHandler: verifyMultiple }, async (req, reply) => {
   const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).orderBy(desc(foundItems.id)).all();
   reply.send({ items });
@@ -916,6 +983,84 @@ fastify.get("/found-items", { preHandler: verifyMultiple }, async (req, reply) =
 fastify.get("/lost-items", { preHandler: verifyMultiple }, async (req, reply) => {
   const items = await db.select().from(lostItems).where(eq(lostItems.status, "missing")).orderBy(desc(lostItems.id)).all();
   reply.send({ items });
+});
+
+fastify.get("/admin/archive", { preHandler: verifyAdmin }, async (req, reply) => {
+  const { type } = req.query; 
+  
+  if (!type || !['claimed', 'reunited', 'expired'].includes(type)) {
+    return reply.status(400).send({ 
+      error: "Invalid or missing 'type' query parameter. Must be 'claimed', 'reunited', or 'expired'." 
+    });
+  }
+
+  try {
+    let items = [];
+
+    if (type === 'claimed') {
+      const claimedItems = await db.select()
+        .from(foundItems)
+        .where(eq(foundItems.status, "claimed"))
+        .orderBy(desc(foundItems.id))
+        .all();
+      
+      items = claimedItems.map(item => ({
+        ...item,
+        date_reported: item.date_found, 
+        itemType: 'Found'
+      }));
+
+    } else if (type === 'reunited') {
+      const reunitedItems = await db.select()
+        .from(lostItems)
+        .where(eq(lostItems.status, "found"))
+        .orderBy(desc(lostItems.id))
+        .all();
+      
+      items = reunitedItems.map(item => ({
+        ...item,
+        date_reported: item.date_lost, 
+        itemType: 'Lost',
+        user_email: item.owner 
+      }));
+
+    } else if (type === 'expired') {
+      const [expiredFoundItems, expiredLostItems] = await Promise.all([
+        db.select()
+          .from(foundItems)
+          .where(eq(foundItems.status, "expired"))
+          .orderBy(desc(foundItems.id))
+          .all(),
+        db.select()
+          .from(lostItems)
+          .where(eq(lostItems.status, "expired"))
+          .orderBy(desc(lostItems.id))
+          .all()
+      ]);
+
+      const mappedFoundItems = expiredFoundItems.map(item => ({
+        ...item,
+        date_reported: item.date_found,
+        itemType: 'Found'
+      }));
+
+      const mappedLostItems = expiredLostItems.map(item => ({
+        ...item,
+        date_reported: item.date_lost,
+        itemType: 'Lost',
+        user_email: item.owner
+      }));
+
+      items = [...mappedFoundItems, ...mappedLostItems]
+        .sort((a, b) => b.id - a.id);
+    }
+
+    reply.send({ items });
+
+  } catch (error) {
+    fastify.log.error(error, `Error fetching archive items of type: ${type}`);
+    reply.status(500).send({ error: "Internal server error while fetching archive items." });
+  }
 });
 
 fastify.get("/", async (req, reply) => {
