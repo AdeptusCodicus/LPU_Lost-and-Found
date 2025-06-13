@@ -982,7 +982,7 @@ fastify.post("/admin/item/:id/mark-expired", { preHandler: verifyAdmin }, async 
   }
 });
 
-fastify.delete("/admin/item/delete/:id", { preHandler: verifyAdmin }, async (req, reply) => {
+/* fastify.delete("/admin/item/delete/:id", { preHandler: verifyAdmin }, async (req, reply) => {
   const itemId = Number(req.params.id);
   if (isNaN(itemId) || !isFinite(itemId)) {
     return reply.status(400).send({ error: "Invalid item ID format." });
@@ -991,7 +991,6 @@ fastify.delete("/admin/item/delete/:id", { preHandler: verifyAdmin }, async (req
   try {
     let deletedItem;
     let itemType;
-
     const foundItemToDelete = await db.select().from(foundItems).where(eq(foundItems.id, itemId)).get();
     if (foundItemToDelete) {
       deletedItem = await db.delete(foundItems).where(eq(foundItems.id, itemId)).returning().get();
@@ -1017,7 +1016,7 @@ fastify.delete("/admin/item/delete/:id", { preHandler: verifyAdmin }, async (req
     fastify.log.error(error, `Error deleting item ID ${itemId} by admin ${req.user.email}`);
     reply.status(500).send({ error: "Internal server error while deleting item." });
   }
-});
+}); */
 
 fastify.get("/found-items", { preHandler: verifyMultiple }, async (req, reply) => {
   const items = await db.select().from(foundItems).where(eq(foundItems.status, "available")).orderBy(desc(foundItems.id)).all();
